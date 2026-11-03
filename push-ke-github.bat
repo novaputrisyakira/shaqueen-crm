@@ -35,7 +35,8 @@ echo 1. Gulir ke bagian paling bawah.
 echo 2. Klik tombol hijau 'Generate token'.
 echo 3. Salin token tersebut (ghp_...).
 echo.
-pause
+set /p LANJUT="Apakah Anda sudah menyalin token dan ingin langsung melanjutkan push? (Y/T): "
+if /i "!LANJUT!"=="Y" goto PUSH_TOKEN
 goto MENU
 
 :PUSH_TOKEN

@@ -67,8 +67,17 @@ async function autoPush(token, repoName = 'shaqueen-crm', isPrivate = false) {
     return false;
   }
 
-  console.log('\n3. Menyiapkan remote Git lokal...');
+  console.log('\n3. Menyiapkan remote Git lokal & sinkronisasi berkas...');
   try {
+    try {
+      const status = runGit('status --porcelain');
+      if (status) {
+        console.log('Menyimpan perubahan berkas lokal ke Git...');
+        runGit('add -A');
+        runGit('commit -m "chore: pembaruan berkas proyek sebelum push ke GitHub"');
+      }
+    } catch (_) {}
+
     try { runGit('remote remove origin'); } catch (_) {}
     
     // Add remote with token for authenticated push
@@ -98,15 +107,20 @@ async function autoPush(token, repoName = 'shaqueen-crm', isPrivate = false) {
   }
 }
 
+function cleanToken(rawToken) {
+  if (!rawToken) return '';
+  return rawToken.trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
+}
+
 async function main() {
   const args = process.argv.slice(2);
-  let token = process.env.GITHUB_TOKEN || '';
+  let token = cleanToken(process.env.GITHUB_TOKEN || '');
   let repoName = 'shaqueen-crm';
   let isPrivate = false;
 
   for (const arg of args) {
-    if (arg.startsWith('--token=')) token = arg.split('=')[1].trim();
-    if (arg.startsWith('--repo=')) repoName = arg.split('=')[1].trim();
+    if (arg.startsWith('--token=')) token = cleanToken(arg.slice(8));
+    if (arg.startsWith('--repo=')) repoName = arg.slice(7).trim();
     if (arg === '--private') isPrivate = true;
   }
 
@@ -120,22 +134,30 @@ async function main() {
     output: process.stdout
   });
 
+  const authUrl = 'https://github.com/settings/tokens/new?scopes=repo&description=Shaqueen+Food+CRM';
+
   console.log('======================================================');
   console.log('      SHAQUEEN FOOD CRM - PUSH OTOMATIS GITHUB        ');
   console.log('======================================================');
   console.log('Silakan buat Personal Access Token (PAT) GitHub dengan scope "repo" di:');
-  console.log('👉 https://github.com/settings/tokens/new?scopes=repo&description=Shaqueen+Food+CRM\n');
+  console.log(`👉 ${authUrl}\n`);
 
   try {
     if (process.platform === 'win32') {
-      execSync('cmd.exe /c start "" "https://github.com/settings/tokens/new?scopes=repo^&description=Shaqueen+Food+CRM"', { stdio: 'ignore' });
+      execSync(`start "" "${authUrl}"`, { stdio: 'ignore' });
+      console.log('🌐 Membuka peramban (browser) otomatis ke halaman otorisasi GitHub...\n');
+    } else if (process.platform === 'darwin') {
+      execSync(`open "${authUrl}"`, { stdio: 'ignore' });
+      console.log('🌐 Membuka peramban (browser) otomatis ke halaman otorisasi GitHub...\n');
+    } else if (process.platform === 'linux') {
+      execSync(`xdg-open "${authUrl}"`, { stdio: 'ignore' });
       console.log('🌐 Membuka peramban (browser) otomatis ke halaman otorisasi GitHub...\n');
     }
   } catch (_) {}
 
   rl.question('Masukkan Personal Access Token (PAT) GitHub Anda: ', async (inputToken) => {
     rl.close();
-    inputToken = inputToken.trim();
+    inputToken = cleanToken(inputToken);
     if (!inputToken) {
       console.error('❌ Token tidak boleh kosong.');
       process.exit(1);
