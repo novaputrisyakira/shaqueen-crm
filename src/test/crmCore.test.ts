@@ -869,15 +869,15 @@ export function runCoreVerificationTests() {
   const targetStl = b2bBoardBefore.find(s => s.id === 'st-delete')!;
   const b2bBoardAfter = b2bBoardBefore.filter(s => s.id !== targetStl.id);
   const restoredStockGudang = initialStockGudang + targetStl.qtyPcs; // 100 + 24 = 124
-  const revertedCartons = initialPartnerCartons - 2; // 6 - 2 = 4
-  const revertedOmzet = initialPartnerOmzet - targetStl.totalCollected; // 756000 - 252000 = 504000
+  const cascadeRevertedCartons = initialPartnerCartons - 2; // 6 - 2 = 4
+  const cascadeRevertedOmzet = initialPartnerOmzet - targetStl.totalCollected; // 756000 - 252000 = 504000
 
   const pass43 = 
     b2bBoardAfter.length === 1 &&
     b2bBoardAfter[0].id === 'st-keep' &&
     restoredStockGudang === 124 &&
-    revertedCartons === 4 &&
-    revertedOmzet === 504000;
+    cascadeRevertedCartons === 4 &&
+    cascadeRevertedOmzet === 504000;
 
   results.push({
     test: 'B2B Wholesale Cascade Deletion: Pembersihan Kartu dari Board, Revert Omzet Toko & Pengembalian Stok',

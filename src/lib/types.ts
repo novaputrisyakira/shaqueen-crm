@@ -22,7 +22,7 @@ export interface Product {
 }
 
 export type OrderPlatform = 'WhatsApp' | 'Shopee' | 'TikTok';
-export type CustomerTag = 'Pelanggan Baru' | 'Pelanggan Loyal' | 'At-Risk (Jarang Beli)';
+export type CustomerTag = 'Pelanggan Baru' | 'Pelanggan Loyal' | 'At-Risk (Jarang Beli)' | 'Baru' | 'Loyal' | 'At-Risk';
 
 export interface RetailCustomer {
   id: string;
@@ -39,7 +39,7 @@ export interface RetailCustomer {
 }
 
 export type OrderStatus = 'diproses' | 'dikirim' | 'selesai' | 'dibatalkan';
-export type PipelineStage = 'diproses' | 'dikirim' | 'h_plus_2' | 'h_plus_30';
+export type PipelineStage = 'diproses' | 'dikirim' | 'h_plus_2' | 'h_plus_30' | 'selesai';
 
 export interface OrderItem {
   productId: string;
@@ -103,11 +103,23 @@ export interface B2BPartner {
 export interface B2BDrop {
   id: string;
   partnerId?: string;
+  partnerName?: string;
   productId?: string;
+  productName?: string;
+  dropDate?: string;
+  quantityDropped?: number;
+  quantityInPcs?: number;
+  b2bUnit?: string;
+  b2bConversion?: number;
+  b2bUnitPrice?: number;
+  totalEstimatedValue?: number;
+  batchCode?: string;
   status?: string;
+  notes?: string;
+  [key: string]: any;
 }
 
-export type B2BPipelineStage = 'barang_baru_turun' | 'h_plus_7' | 'h_plus_14';
+export type B2BPipelineStage = 'barang_baru_turun' | 'h_plus_7' | 'h_plus_14' | 'selesai';
 
 export interface B2BSettlement {
   id: string;

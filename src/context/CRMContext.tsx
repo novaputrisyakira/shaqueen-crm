@@ -723,7 +723,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const itemSubtotal = item.subtotal !== undefined
           ? item.subtotal
           : (itemIsB2B ? itemPcs * itemUnitPrice : itemQty * itemUnitPrice);
-        const itemHpp = item.hpp !== undefined ? Number(item.hpp) : (prod?.hpp || 0);
+        const itemHpp = (item as any).hpp !== undefined ? Number((item as any).hpp) : (prod?.hpp || 0);
         const itemGrossProfit = (itemUnitPrice - itemHpp) * itemPcs;
 
         return {
@@ -1285,10 +1285,12 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const product = products.find(p => p.id === drop.productId);
     const conversion = drop.b2bConversion || (product ? product.b2bConversion : 12) || 12;
-    const restorePcs = drop.quantityInPcs || (drop.quantityDropped * conversion);
+    const restorePcs = drop.quantityInPcs || ((drop.quantityDropped || 0) * conversion);
 
     // Restore inventory stock in Pcs
-    adjustProductStock(drop.productId, restorePcs);
+    if (drop.productId) {
+      adjustProductStock(drop.productId, restorePcs);
+    }
 
     setDrops(prev => prev.filter(d => d.id !== dropId));
   };

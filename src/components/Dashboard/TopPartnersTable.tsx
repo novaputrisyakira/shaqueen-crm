@@ -140,7 +140,8 @@ export const TopPartnersTable: React.FC = () => {
                   </span>
                 </td>
               </tr>
-            ))}
+            ))
+          )}
           </tbody>
         </table>
       </div>
