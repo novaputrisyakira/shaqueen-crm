@@ -1,0 +1,25 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Background -->
+  <rect width="64" height="64" rx="16" fill="url(#sq_grad)"/>
+  
+  <!-- Bowl Base -->
+  <path d="M14 30C14 44 22 50 32 50C42 50 50 44 50 30H14Z" fill="#FFFFFF"/>
+  <rect x="11" y="26" width="42" height="5" rx="2.5" fill="#FFFFFF"/>
+  
+  <!-- Snack Topping Elements: Cuanki & Moringa Leaf -->
+  <circle cx="25" cy="24" r="4.5" fill="#F4F1DE"/>
+  <circle cx="39" cy="24" r="4" fill="#E85D04"/>
+  <path d="M32 14C32 14 36 18 36 22C36 24.5 34 26 32 26C30 26 28 24.5 28 22C28 18 32 14 32 14Z" fill="#40796C"/>
+  
+  <!-- Steam Aromatics -->
+  <path d="M23 15C22 12 24 10 23 7" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
+  <path d="M41 15C40 12 42 10 41 7" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
+
+  <defs>
+    <linearGradient id="sq_grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E85D04"/>
+      <stop offset="0.5" stop-color="#D04B00"/>
+      <stop offset="1" stop-color="#40796C"/>
+    </linearGradient>
+  </defs>
+</svg>
