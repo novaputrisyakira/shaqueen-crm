@@ -126,6 +126,13 @@ async function main() {
   console.log('Silakan buat Personal Access Token (PAT) GitHub dengan scope "repo" di:');
   console.log('👉 https://github.com/settings/tokens/new?scopes=repo&description=Shaqueen+Food+CRM\n');
 
+  try {
+    if (process.platform === 'win32') {
+      execSync('cmd.exe /c start "" "https://github.com/settings/tokens/new?scopes=repo^&description=Shaqueen+Food+CRM"', { stdio: 'ignore' });
+      console.log('🌐 Membuka peramban (browser) otomatis ke halaman otorisasi GitHub...\n');
+    }
+  } catch (_) {}
+
   rl.question('Masukkan Personal Access Token (PAT) GitHub Anda: ', async (inputToken) => {
     rl.close();
     inputToken = inputToken.trim();

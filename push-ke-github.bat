@@ -5,21 +5,38 @@ setlocal enabledelayedexpansion
 :: Pastikan Git dan Git Credential Manager berada dalam PATH
 set "PATH=C:\Users\Thinkpad\.gemini\antigravity\scratch\git\cmd;C:\Users\Thinkpad\.gemini\antigravity\scratch\git\ucrt64\bin;%PATH%"
 
+:MENU
+cls
 echo ========================================================
 echo       SHAQUEEN FOOD CRM - PUSH OTOMATIS KE GITHUB
 echo ========================================================
 echo.
-echo Pilih metode push:
-echo   [1] Otomatis via Token GitHub (Membuat repo otomatis jika belum ada)
-echo   [2] Manual via URL Repository ^& Browser Login (Git Credential Manager)
-echo   [3] Keluar
+echo Pilih metode:
+echo   [1] Buka Halaman Otorisasi GitHub di Browser
+echo   [2] Otomatis via Token GitHub (Membuat repo otomatis jika belum ada)
+echo   [3] Manual via URL Repository ^& Browser Login (Git Credential Manager)
+echo   [4] Keluar
 echo.
-set /p PILIHAN="Pilihan Anda (1/2/3): "
+set /p PILIHAN="Pilihan Anda (1/2/3/4): "
 
-if "%PILIHAN%"=="1" goto PUSH_TOKEN
-if "%PILIHAN%"=="2" goto PUSH_URL
-if "%PILIHAN%"=="3" exit /b 0
+if "%PILIHAN%"=="1" goto BUKA_OTORISASI
+if "%PILIHAN%"=="2" goto PUSH_TOKEN
+if "%PILIHAN%"=="3" goto PUSH_URL
+if "%PILIHAN%"=="4" exit /b 0
 goto PUSH_TOKEN
+
+:BUKA_OTORISASI
+echo.
+echo Membuka halaman otorisasi GitHub di peramban browser...
+start "" "https://github.com/settings/tokens/new?scopes=repo&description=Shaqueen+Food+CRM"
+echo.
+echo Halaman otorisasi GitHub telah dibuka di browser Anda!
+echo 1. Gulir ke bagian paling bawah.
+echo 2. Klik tombol hijau 'Generate token'.
+echo 3. Salin token tersebut (ghp_...).
+echo.
+pause
+goto MENU
 
 :PUSH_TOKEN
 echo.
