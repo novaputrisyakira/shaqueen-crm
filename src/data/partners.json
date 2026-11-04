@@ -1,0 +1,67 @@
+[
+  {
+    "id": "pt-1793722539645",
+    "storeName": "Glosir Berkah",
+    "ownerName": "Glosir Berkah",
+    "phone": "6281233445777",
+    "address": "Jl. Kopo Cirangrang No. 77, Bandung",
+    "location": "Bandung",
+    "joinDate": "2026-06-15",
+    "status": "aktif",
+    "notes": "Grosir sembako & snack Priangan, mitra B2B aktif kartonan.",
+    "totalPurchasedCartons": 2,
+    "totalSettledAmount": 276000
+  },
+  {
+    "id": "partner-1",
+    "storeName": "Warung Berkah Bu Haji (Toko Berkah)",
+    "ownerName": "Ibu Hj. Siti Aminah",
+    "phone": "081233445566",
+    "address": "Jl. Riau No. 45, Bandung",
+    "location": "Bandung",
+    "joinDate": "2026-06-15",
+    "status": "aktif",
+    "notes": "Lokasi strategis dekat pusat keramaian Bandung. Penjualan grosir Cuanki Instan & Pilus rutin mingguan.",
+    "totalPurchasedCartons": 15,
+    "totalSettledAmount": 2340000
+  },
+  {
+    "id": "partner-2",
+    "storeName": "Toko Kelontong Barokah (Pasundan Asri)",
+    "ownerName": "Pak Joko Sutrisno",
+    "phone": "085677889900",
+    "address": "Pasar Baru Blok B12, Bandung",
+    "location": "Bandung",
+    "joinDate": "2026-07-01",
+    "status": "aktif",
+    "notes": "Target wisatawan akhir pekan. Moring dan Cuanki selalu dipesan setiap hari Kamis.",
+    "totalPurchasedCartons": 18,
+    "totalSettledAmount": 2808000
+  },
+  {
+    "id": "partner-3",
+    "storeName": "Minimarket Cemilan Kuring",
+    "ownerName": "Kang Asep",
+    "phone": "087711224455",
+    "address": "Jl. Dago Atas No. 110, Bandung",
+    "location": "Bandung",
+    "joinDate": "2026-08-10",
+    "status": "aktif",
+    "notes": "Kawasan wisata & kampus Dago. Pilus kencur dan moring sangat laris.",
+    "totalPurchasedCartons": 8,
+    "totalSettledAmount": 1248000
+  },
+  {
+    "id": "partner-4",
+    "storeName": "Agen Cemilan Buah Batu",
+    "ownerName": "Pak Hendra Gunawan",
+    "phone": "081988776655",
+    "address": "Jl. Buah Batu No. 182, Bandung",
+    "location": "Bandung",
+    "joinDate": "2026-09-01",
+    "status": "aktif",
+    "notes": "Mitra agen distributor camilan wilayah Bandung Selatan.",
+    "totalPurchasedCartons": 4,
+    "totalSettledAmount": 624000
+  }
+]

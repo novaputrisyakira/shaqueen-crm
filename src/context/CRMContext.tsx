@@ -240,13 +240,18 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Selalu tampilkan Landing Page saat awal buka link (/)
       setIsLoggedIn(false);
 
-      // Version lock to ensure official Shaqueen Food catalog is permanently loaded on Vercel
-      const DATA_VERSION = 'v20261104_official_shaqueen_v2';
+      // Version lock to ensure official Shaqueen Food catalog & customers are permanently loaded on Vercel
+      const DATA_VERSION = 'v20261104_official_shaqueen_permanent_v3';
       const currentVersion = localStorage.getItem('shaqueen_data_version');
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
+      const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
+      const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS) || localStorage.getItem('sq_orders');
+      const storedPartners = localStorage.getItem(STORAGE_KEYS.PARTNERS) || localStorage.getItem('sq_partners');
+      const storedDrops = localStorage.getItem(STORAGE_KEYS.DROPS) || localStorage.getItem('sq_drops');
+      const storedSettlements = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
 
-      if (currentVersion !== DATA_VERSION || !storedProducts) {
-        // Upgrade / fresh seed: load official permanent products, preserving any newly created custom products
+      if (currentVersion !== DATA_VERSION || !storedProducts || !storedCustomers) {
+        // Upgrade / fresh seed: load official permanent datasets, preserving any custom user records
         let customUserProducts: Product[] = [];
         if (storedProducts) {
           try {
@@ -260,6 +265,67 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setProducts(permanentCatalog);
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
         localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
+
+        // Customers: merge INITIAL_CUSTOMERS with any custom customers
+        let customUserCustomers: RetailCustomer[] = [];
+        if (storedCustomers) {
+          try {
+            const parsed: RetailCustomer[] = JSON.parse(storedCustomers);
+            if (Array.isArray(parsed)) {
+              customUserCustomers = parsed.filter(c => !INITIAL_CUSTOMERS.some(ic => ic.id === c.id || ic.phone === c.phone));
+            }
+          } catch {}
+        }
+        const permanentCustomers = [...INITIAL_CUSTOMERS, ...customUserCustomers];
+        setCustomers(permanentCustomers);
+        localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(permanentCustomers));
+        localStorage.setItem('sq_customers', JSON.stringify(permanentCustomers));
+
+        // Orders: merge INITIAL_ORDERS with any custom orders
+        let customUserOrders: B2COrder[] = [];
+        if (storedOrders) {
+          try {
+            const parsed: B2COrder[] = JSON.parse(storedOrders);
+            if (Array.isArray(parsed)) {
+              customUserOrders = parsed.filter(o => !INITIAL_ORDERS.some(io => io.id === o.id));
+            }
+          } catch {}
+        }
+        const permanentOrders = [...INITIAL_ORDERS, ...customUserOrders];
+        setOrders(permanentOrders);
+        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(permanentOrders));
+        localStorage.setItem('sq_orders', JSON.stringify(permanentOrders));
+
+        // Partners: merge INITIAL_PARTNERS with any custom partners
+        let customUserPartners: B2BPartner[] = [];
+        if (storedPartners) {
+          try {
+            const parsed: B2BPartner[] = JSON.parse(storedPartners);
+            if (Array.isArray(parsed)) {
+              customUserPartners = parsed.filter(p => !INITIAL_PARTNERS.some(ip => ip.id === p.id));
+            }
+          } catch {}
+        }
+        const permanentPartners = [...INITIAL_PARTNERS, ...customUserPartners];
+        setPartners(permanentPartners);
+        localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(permanentPartners));
+        localStorage.setItem('sq_partners', JSON.stringify(permanentPartners));
+
+        // Settlements: merge INITIAL_SETTLEMENTS with any custom settlements
+        let customUserSettlements: B2BSettlement[] = [];
+        if (storedSettlements) {
+          try {
+            const parsed: B2BSettlement[] = JSON.parse(storedSettlements);
+            if (Array.isArray(parsed)) {
+              customUserSettlements = parsed.filter(s => !INITIAL_SETTLEMENTS.some(is => is.id === s.id));
+            }
+          } catch {}
+        }
+        const permanentSettlements = [...INITIAL_SETTLEMENTS, ...customUserSettlements];
+        setSettlements(permanentSettlements);
+        localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, JSON.stringify(permanentSettlements));
+        localStorage.setItem('sq_settlements', JSON.stringify(permanentSettlements));
+
         localStorage.setItem('shaqueen_data_version', DATA_VERSION);
       } else {
         try {
@@ -289,50 +355,69 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         } catch {
           setProducts(INITIAL_PRODUCTS);
         }
-      }
 
-      const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
-      if (storedCustomers) setCustomers(JSON.parse(storedCustomers));
+        if (storedCustomers) {
+          try {
+            setCustomers(JSON.parse(storedCustomers));
+          } catch {
+            setCustomers(INITIAL_CUSTOMERS);
+          }
+        }
 
-      const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS) || localStorage.getItem('sq_orders');
-      if (storedOrders) {
-        const parsed = JSON.parse(storedOrders);
-        const normalized = (parsed || []).map((o: any) => ({
-          ...o,
-          pipelineStage: o.pipelineStage || o.stage || 'diproses',
-          stage: o.stage || o.pipelineStage || 'diproses',
-          customerPhone: o.customerPhone || o.phone || '',
-          phone: o.phone || o.customerPhone || '',
-          totalAmount: o.totalAmount !== undefined ? o.totalAmount : (o.total || 0),
-          total: o.total !== undefined ? o.total : (o.totalAmount || 0),
-          trackingNumber: o.trackingNumber || o.resi || '',
-          resi: o.resi || o.trackingNumber || '',
-        }));
-        setOrders(normalized);
-      }
+        if (storedOrders) {
+          try {
+            const parsed = JSON.parse(storedOrders);
+            const normalized = (parsed || []).map((o: any) => ({
+              ...o,
+              pipelineStage: o.pipelineStage || o.stage || 'diproses',
+              stage: o.stage || o.pipelineStage || 'diproses',
+              customerPhone: o.customerPhone || o.phone || '',
+              phone: o.phone || o.customerPhone || '',
+              totalAmount: o.totalAmount !== undefined ? o.totalAmount : (o.total || 0),
+              total: o.total !== undefined ? o.total : (o.totalAmount || 0),
+              trackingNumber: o.trackingNumber || o.resi || '',
+              resi: o.resi || o.trackingNumber || '',
+            }));
+            setOrders(normalized);
+          } catch {
+            setOrders(INITIAL_ORDERS);
+          }
+        }
 
-      const storedPartners = localStorage.getItem(STORAGE_KEYS.PARTNERS) || localStorage.getItem('sq_partners');
-      if (storedPartners) setPartners(JSON.parse(storedPartners));
+        if (storedPartners) {
+          try {
+            setPartners(JSON.parse(storedPartners));
+          } catch {
+            setPartners(INITIAL_PARTNERS);
+          }
+        }
 
-      const storedDrops = localStorage.getItem(STORAGE_KEYS.DROPS) || localStorage.getItem('sq_drops');
-      if (storedDrops) setDrops(JSON.parse(storedDrops));
+        if (storedDrops) {
+          try {
+            setDrops(JSON.parse(storedDrops));
+          } catch {}
+        }
 
-      const storedSettlements = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
-      if (storedSettlements) {
-        const parsed = JSON.parse(storedSettlements);
-        const validStages: B2BPipelineStage[] = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
-        setSettlements(parsed.map((s: any) => {
-          const stage = (s.pipelineStage && validStages.includes(s.pipelineStage))
-            ? s.pipelineStage
-            : (s.stage && validStages.includes(s.stage))
-              ? s.stage
-              : 'barang_baru_turun';
-          return {
-            ...s,
-            pipelineStage: stage,
-            stage: stage,
-          };
-        }));
+        if (storedSettlements) {
+          try {
+            const parsed = JSON.parse(storedSettlements);
+            const validStages: B2BPipelineStage[] = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
+            setSettlements(parsed.map((s: any) => {
+              const stage = (s.pipelineStage && validStages.includes(s.pipelineStage))
+                ? s.pipelineStage
+                : (s.stage && validStages.includes(s.stage))
+                  ? s.stage
+                  : 'barang_baru_turun';
+              return {
+                ...s,
+                pipelineStage: stage,
+                stage: stage,
+              };
+            }));
+          } catch {
+            setSettlements(INITIAL_SETTLEMENTS);
+          }
+        }
       }
 
       const storedTemplates = localStorage.getItem(STORAGE_KEYS.TEMPLATES) || localStorage.getItem('sq_templates');
