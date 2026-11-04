@@ -241,7 +241,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoggedIn(false);
 
       // Version lock to ensure ONLY official authentic Shaqueen Food catalog & customers are permanently loaded on Vercel
-      const DATA_VERSION = 'v20261104_official_shaqueen_pure_v4';
+      const DATA_VERSION = 'v20261104_official_shaqueen_pure_v5';
       const currentVersion = localStorage.getItem('shaqueen_data_version');
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
