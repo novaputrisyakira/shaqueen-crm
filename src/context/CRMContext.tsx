@@ -242,20 +242,34 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
       if (storedProducts) {
-        const parsed: Product[] = JSON.parse(storedProducts);
-        const enriched = parsed.map((p, idx) => {
-          const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
-          const img = p.image_url || p.imageUrl || defaultProd?.imageUrl || defaultProd?.image_url;
-          return {
-            ...p,
-            imageUrl: img,
-            image_url: img,
-            hpp: p.hpp !== undefined ? Number(p.hpp) : (defaultProd?.hpp || 9000),
-            b2bUnit: ((p.b2bUnit || '').trim() || defaultProd?.b2bUnit || 'Karton'),
-            b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (defaultProd?.b2bConversion || 12)),
-          };
-        });
-        setProducts(enriched);
+        try {
+          const parsed: Product[] = JSON.parse(storedProducts);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const existingIds = new Set(parsed.map(p => p.id));
+            const existingNames = new Set(parsed.map(p => (p.name || '').toLowerCase().trim()));
+            const enriched = parsed.map((p, idx) => {
+              const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
+              const img = p.image_url || p.imageUrl || defaultProd?.imageUrl || defaultProd?.image_url;
+              return {
+                ...p,
+                imageUrl: img,
+                image_url: img,
+                hpp: p.hpp !== undefined ? Number(p.hpp) : (defaultProd?.hpp || 9000),
+                b2bUnit: ((p.b2bUnit || '').trim() || defaultProd?.b2bUnit || 'Karton'),
+                b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (defaultProd?.b2bConversion || 12)),
+              };
+            });
+            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id) && !existingNames.has(dp.name.toLowerCase().trim()));
+            const finalProducts = [...enriched, ...missingDefaults];
+            setProducts(finalProducts);
+          } else {
+            setProducts(INITIAL_PRODUCTS);
+          }
+        } catch {
+          setProducts(INITIAL_PRODUCTS);
+        }
+      } else {
+        setProducts(INITIAL_PRODUCTS);
       }
 
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');

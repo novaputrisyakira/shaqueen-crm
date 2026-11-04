@@ -211,12 +211,13 @@
 
     // Default Seed Data with Appetizing Food Photos
     const INITIAL_PRODUCTS = [
-      { id: 'p1', sku: 'SQ-CK-PEDAS', name: 'Cuanki Instan Super Pedas (150g)', category: 'Cuanki', b2cPrice: 18000, b2bPrice: 13000, hpp: 9000, b2bUnit: 'Karton', b2bConversion: 12, stock: 120, status: 'aktif', desc: 'Cuanki kuah gurih pedas nampol khas Bandung dengan topping siomay & tahu kering', image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60' },
-      { id: 'p2', sku: 'SQ-CK-ORI', name: 'Cuanki Ori Gurih Kaldu Sapi (150g)', category: 'Cuanki', b2cPrice: 18000, b2bPrice: 13000, hpp: 9000, b2bUnit: 'Karton', b2bConversion: 12, stock: 85, status: 'aktif', desc: 'Cuanki kaldu sapi otentik dengan aroma bawang goreng renyah dan bumbu rempah', image_url: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=60' },
-      { id: 'p3', sku: 'SQ-MR-SPICY', name: 'Keripik Moringa Spicy Cheese (100g)', category: 'Keripik', b2cPrice: 16000, b2bPrice: 11500, hpp: 8000, b2bUnit: 'Karton', b2bConversion: 20, stock: 95, status: 'aktif', desc: 'Keripik daun kelor sehat, gurih renyah dipadu taburan keju pedas spesial', image_url: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60' },
-      { id: 'p4', sku: 'SQ-MR-BALADO', name: 'Keripik Moringa Balado Manis (100g)', category: 'Keripik', b2cPrice: 16000, b2bPrice: 11500, hpp: 8000, b2bUnit: 'Karton', b2bConversion: 20, stock: 70, status: 'aktif', desc: 'Keripik daun kelor berbalut bumbu balado karamel manis pedas', image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=60' },
-      { id: 'p5', sku: 'SQ-PL-CIKUR', name: 'Pilus Renyah Rasa Kencur Cikur (250g)', category: 'Pilus', b2cPrice: 15000, b2bPrice: 10500, hpp: 7000, b2bUnit: 'Bal', b2bConversion: 10, stock: 140, status: 'aktif', desc: 'Pilus bulat super renyah dengan aroma cikur/kencur menggoda selera', image_url: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=60' },
-      { id: 'p6', sku: 'SQ-BDL-MANTAP', name: 'Paket Bundling Cuanki Mantap + Moringa', category: 'Paket Bundle', b2cPrice: 32000, b2bPrice: 23500, hpp: 16000, b2bUnit: 'Pack', b2bConversion: 6, stock: 45, status: 'aktif', desc: '1 Pouch Cuanki Pedas + 1 Pouch Keripik Moringa Spicy Cheese', image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p1', sku: 'SQ-CK-PEDAS', name: 'Cuanki Instan Super Pedas (150g)', category: 'Cuanki', b2cPrice: 18000, b2bPrice: 13000, hpp: 9000, b2bUnit: 'Karton', b2bConversion: 12, stock: 150, status: 'aktif', desc: 'Cuanki kuah gurih pedas nampol khas Bandung dengan topping siomay, tahu kering, dan pilus cikur', image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p2', sku: 'SQ-MR-PEDAS', name: 'Moring Varian Pedas Daun Jeruk (120g)', category: 'Keripik', b2cPrice: 15000, b2bPrice: 10500, hpp: 7000, b2bUnit: 'Karton', b2bConversion: 20, stock: 200, status: 'aktif', desc: 'Cimol Kering (Moring) renyah gurih dibalut bumbu cabai rawit pedas nendang dan irisan daun jeruk segar wangi semerbak', image_url: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p3', sku: 'SQ-MR-ORI', name: 'Moring Varian Gurih Original (120g)', category: 'Keripik', b2cPrice: 15000, b2bPrice: 10500, hpp: 7000, b2bUnit: 'Karton', b2bConversion: 20, stock: 180, status: 'aktif', desc: 'Moring renyah dengan racikan bumbu bawang putih gurih asin alami dan taburan daun jeruk, renyah tanpa keras', image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p4', sku: 'SQ-CK-ORI', name: 'Cuanki Ori Gurih Kaldu Sapi (150g)', category: 'Cuanki', b2cPrice: 18000, b2bPrice: 13000, hpp: 9000, b2bUnit: 'Karton', b2bConversion: 12, stock: 120, status: 'aktif', desc: 'Cuanki kaldu sapi otentik dengan aroma bawang goreng renyah dan bumbu rempah segar ramah lambung', image_url: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p5', sku: 'SQ-PL-CIKUR', name: 'Pilus Renyah Rasa Kencur Cikur (250g)', category: 'Pilus', b2cPrice: 12000, b2bPrice: 8500, hpp: 6500, b2bUnit: 'Bal', b2bConversion: 10, stock: 210, status: 'aktif', desc: 'Pilus butir kencur renyah gurih super garing, teman setia makan bakso, cuanki, mie rebus, dan camilan santai', image_url: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p6', sku: 'SQ-KK-PEDAS', name: 'Keripik Kaca Pedas Daun Jeruk (100g)', category: 'Keripik', b2cPrice: 13000, b2bPrice: 9000, hpp: 6000, b2bUnit: 'Karton', b2bConversion: 20, stock: 140, status: 'aktif', desc: 'Keripik singkong tipis bening super renyah berbalut bumbu cabai pedas asin dan irisan daun jeruk wangi', image_url: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60' },
+      { id: 'p7', sku: 'SQ-BDL-MANTAP', name: 'Paket Bundling Cuanki Mantap + Moring Pedas', category: 'Paket Bundle', b2cPrice: 30000, b2bPrice: 22000, hpp: 15000, b2bUnit: 'Pack', b2bConversion: 6, stock: 65, status: 'aktif', desc: 'Paket hemat komplit: 1 Pouch Cuanki Instan Super Pedas (150g) + 1 Pouch Moring Varian Pedas Daun Jeruk (120g)', image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60', imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60' },
     ];
 
     const INITIAL_CUSTOMERS = [
@@ -229,27 +230,27 @@
 
     const INITIAL_ORDERS = [
       { id: 'ord-101', customerName: 'Dimas Prasetyo', phone: '087855443322', productId: 'p1', productName: 'Cuanki Instan Super Pedas (150g)', quantity: 2, total: 36000, hpp: 9000, grossProfit: 18000, platform: 'WhatsApp', stage: 'diproses', orderDate: '2026-11-02', resi: '' },
-      { id: 'ord-102', customerName: 'Budi Santoso', phone: '085712345678', productId: 'p6', productName: 'Paket Bundling Cuanki Mantap + Moringa', quantity: 2, total: 64000, hpp: 16000, grossProfit: 32000, platform: 'Shopee', stage: 'dikirim', orderDate: '2026-10-31', resi: 'SPXID02998811' },
-      { id: 'ord-103', customerName: 'Clarissa Putri', phone: '081287654321', productId: 'p2', productName: 'Cuanki Ori Gurih Kaldu Sapi (150g)', quantity: 2, total: 36000, hpp: 9000, grossProfit: 18000, platform: 'WhatsApp', stage: 'h_plus_2', orderDate: '2026-10-30', resi: 'JP0988776612' },
-      { id: 'ord-104', customerName: 'Siti Rahmawati', phone: '081399887766', productId: 'p3', productName: 'Keripik Moringa Spicy Cheese (100g)', quantity: 3, total: 48000, hpp: 8000, grossProfit: 24000, platform: 'TikTok', stage: 'h_plus_30', orderDate: '2026-10-02', resi: 'TK88992211' },
+      { id: 'ord-102', customerName: 'Budi Santoso', phone: '085712345678', productId: 'p7', productName: 'Paket Bundling Cuanki Mantap + Moring Pedas', quantity: 2, total: 60000, hpp: 15000, grossProfit: 30000, platform: 'Shopee', stage: 'dikirim', orderDate: '2026-10-31', resi: 'SPXID02998811' },
+      { id: 'ord-103', customerName: 'Clarissa Putri', phone: '081287654321', productId: 'p4', productName: 'Cuanki Ori Gurih Kaldu Sapi (150g)', quantity: 2, total: 36000, hpp: 9000, grossProfit: 18000, platform: 'WhatsApp', stage: 'h_plus_2', orderDate: '2026-10-30', resi: 'JP0988776612' },
+      { id: 'ord-104', customerName: 'Siti Rahmawati', phone: '081399887766', productId: 'p2', productName: 'Moring Varian Pedas Daun Jeruk (120g)', quantity: 3, total: 45000, hpp: 7000, grossProfit: 24000, platform: 'TikTok', stage: 'h_plus_30', orderDate: '2026-10-02', resi: 'TK88992211' },
       { id: 'ord-105', customerName: 'Clarissa Putri', phone: '081287654321', productId: 'p1', productName: 'Cuanki Instan Super Pedas (150g)', quantity: 3, total: 54000, hpp: 9000, grossProfit: 27000, platform: 'WhatsApp', stage: 'selesai', orderDate: '2026-09-18', resi: 'JP99887711' },
-      { id: 'ord-106', customerName: 'Nadia Salsabila', phone: '081298451120', productId: 'p3', productName: 'Keripik Moringa Spicy Cheese (100g)', quantity: 2, total: 32000, hpp: 8000, grossProfit: 16000, platform: 'Shopee', stage: 'selesai', orderDate: '2026-08-25', resi: 'SPXID012837' },
+      { id: 'ord-106', customerName: 'Nadia Salsabila', phone: '081298451120', productId: 'p2', productName: 'Moring Varian Pedas Daun Jeruk (120g)', quantity: 2, total: 30000, hpp: 7000, grossProfit: 16000, platform: 'Shopee', stage: 'selesai', orderDate: '2026-08-25', resi: 'SPXID012837' },
     ];
 
     const INITIAL_PARTNERS = [
       { id: 'pt-1', storeName: 'Warung Berkah Bu Haji', ownerName: 'Ibu Hj. Aminah', phone: '081233445566', location: 'Jl. Riau No. 45, Bandung', status: 'aktif', totalPurchasedCartons: 3, totalSettledAmount: 468000 },
       { id: 'pt-2', storeName: 'Toko Kelontong Barokah', ownerName: 'Pak Joko Sutrisno', phone: '085677889900', location: 'Pasar Baru Blok B12, Bandung', status: 'aktif', totalPurchasedCartons: 2, totalSettledAmount: 252000 },
-      { id: 'pt-3', storeName: 'Minimarket Cemilan Kuring', ownerName: 'Kang Asep', phone: '087711224455', location: 'Jl. Dago Atas No. 110, Bandung', status: 'aktif', totalPurchasedCartons: 2, totalSettledAmount: 440000 },
+      { id: 'pt-3', storeName: 'Minimarket Cemilan Kuring', ownerName: 'Kang Asep', phone: '087711224455', location: 'Jl. Dago Atas No. 110, Bandung', status: 'aktif', totalPurchasedCartons: 2, totalSettledAmount: 420000 },
     ];
 
     const INITIAL_DROPS = [];
 
     const INITIAL_SETTLEMENTS = [
       { id: 'st-1', partnerId: 'pt-1', partnerName: 'Warung Berkah Bu Haji', productName: 'Cuanki Instan Super Pedas (150g)', date: '2026-11-01', qty: 3, unit: 'Karton', qtyPcs: 36, b2bPrice: 13000, hpp: 9000, grossProfit: 144000, totalCollected: 468000, status: 'Lunas', stage: 'h_plus_14', pipelineStage: 'h_plus_14' },
-      { id: 'st-2', partnerId: 'pt-2', partnerName: 'Toko Kelontong Barokah', productName: 'Pilus Renyah Rasa Kencur Cikur (250g)', date: '2026-11-02', qty: 2, unit: 'Karton', qtyPcs: 24, b2bPrice: 10500, hpp: 7000, grossProfit: 84000, totalCollected: 252000, status: 'Lunas', stage: 'h_plus_7', pipelineStage: 'h_plus_7' },
-      { id: 'st-3', partnerId: 'pt-3', partnerName: 'Minimarket Cemilan Kuring', productName: 'Keripik Moringa Spicy Cheese (100g)', date: '2026-10-29', qty: 2, unit: 'Karton', qtyPcs: 40, b2bPrice: 11000, hpp: 8000, grossProfit: 120000, totalCollected: 440000, status: 'Lunas', stage: 'barang_baru_turun', pipelineStage: 'barang_baru_turun' },
+      { id: 'st-2', partnerId: 'pt-2', partnerName: 'Toko Kelontong Barokah', productName: 'Pilus Renyah Rasa Kencur Cikur (250g)', date: '2026-11-02', qty: 2, unit: 'Karton', qtyPcs: 24, b2bPrice: 10500, hpp: 6500, grossProfit: 96000, totalCollected: 252000, status: 'Lunas', stage: 'h_plus_7', pipelineStage: 'h_plus_7' },
+      { id: 'st-3', partnerId: 'pt-3', partnerName: 'Minimarket Cemilan Kuring', productName: 'Moring Varian Pedas Daun Jeruk (120g)', date: '2026-10-29', qty: 2, unit: 'Karton', qtyPcs: 40, b2bPrice: 10500, hpp: 7000, grossProfit: 140000, totalCollected: 420000, status: 'Lunas', stage: 'barang_baru_turun', pipelineStage: 'barang_baru_turun' },
       { id: 'st-4', partnerId: 'pt-1', partnerName: 'Warung Berkah Bu Haji', productName: 'Cuanki Instan Super Pedas (150g)', date: '2026-09-22', qty: 4, unit: 'Karton', qtyPcs: 48, b2bPrice: 13000, hpp: 9000, grossProfit: 192000, totalCollected: 624000, status: 'Lunas', stage: 'selesai', pipelineStage: 'selesai' },
-      { id: 'st-5', partnerId: 'pt-2', partnerName: 'Toko Kelontong Barokah', productName: 'Pilus Renyah Rasa Kencur Cikur (250g)', date: '2026-08-20', qty: 3, unit: 'Karton', qtyPcs: 36, b2bPrice: 10500, hpp: 7000, grossProfit: 126000, totalCollected: 378000, status: 'Lunas', stage: 'selesai', pipelineStage: 'selesai' },
+      { id: 'st-5', partnerId: 'pt-2', partnerName: 'Toko Kelontong Barokah', productName: 'Pilus Renyah Rasa Kencur Cikur (250g)', date: '2026-08-20', qty: 3, unit: 'Karton', qtyPcs: 36, b2bPrice: 10500, hpp: 6500, grossProfit: 144000, totalCollected: 378000, status: 'Lunas', stage: 'selesai', pipelineStage: 'selesai' },
     ];
 
     const INITIAL_TEMPLATES = {
@@ -1433,18 +1434,24 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
-            return parsed.map((p, idx) => {
-              const def = INITIAL_PRODUCTS.find(x => x.id === p.id || x.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
-              const img = p.image_url || p.imageUrl || def.image_url;
-              return { 
-                ...p, 
-                image_url: img, 
-                imageUrl: img,
-                hpp: p.hpp !== undefined ? p.hpp : (def.hpp || 9000),
-                b2bUnit: ((p.b2bUnit || '').trim() || def.b2bUnit || 'Karton'),
-                b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (def.b2bConversion || 12))
-              };
-            });
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const existingIds = new Set(parsed.map(p => p.id));
+              const existingNames = new Set(parsed.map(p => (p.name || '').toLowerCase().trim()));
+              const enriched = parsed.map((p, idx) => {
+                const def = INITIAL_PRODUCTS.find(x => x.id === p.id || x.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
+                const img = p.image_url || p.imageUrl || def.image_url;
+                return { 
+                  ...p, 
+                  image_url: img, 
+                  imageUrl: img,
+                  hpp: p.hpp !== undefined ? Number(p.hpp) : (def.hpp || 9000),
+                  b2bUnit: ((p.b2bUnit || '').trim() || def.b2bUnit || 'Karton'),
+                  b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (def.b2bConversion || 12))
+                };
+              });
+              const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id) && !existingNames.has(dp.name.toLowerCase().trim()));
+              return [...enriched, ...missingDefaults];
+            }
           } catch(e) {}
         }
         return INITIAL_PRODUCTS;
