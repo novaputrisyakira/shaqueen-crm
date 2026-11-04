@@ -240,13 +240,33 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Selalu tampilkan Landing Page saat awal buka link (/)
       setIsLoggedIn(false);
 
+      // Version lock to ensure official Shaqueen Food catalog is permanently loaded on Vercel
+      const DATA_VERSION = 'v20261104_official_shaqueen_v2';
+      const currentVersion = localStorage.getItem('shaqueen_data_version');
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
-      if (storedProducts) {
+
+      if (currentVersion !== DATA_VERSION || !storedProducts) {
+        // Upgrade / fresh seed: load official permanent products, preserving any newly created custom products
+        let customUserProducts: Product[] = [];
+        if (storedProducts) {
+          try {
+            const parsed: Product[] = JSON.parse(storedProducts);
+            if (Array.isArray(parsed)) {
+              customUserProducts = parsed.filter(p => !INITIAL_PRODUCTS.some(ip => ip.id === p.id || ip.sku === p.sku));
+            }
+          } catch {}
+        }
+        const permanentCatalog = [...INITIAL_PRODUCTS, ...customUserProducts];
+        setProducts(permanentCatalog);
+        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
+        localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
+        localStorage.setItem('shaqueen_data_version', DATA_VERSION);
+      } else {
         try {
           const parsed: Product[] = JSON.parse(storedProducts);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const existingIds = new Set(parsed.map(p => p.id));
-            const existingNames = new Set(parsed.map(p => (p.name || '').toLowerCase().trim()));
+            const existingSkus = new Set(parsed.map(p => p.sku));
             const enriched = parsed.map((p, idx) => {
               const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
               const img = p.image_url || p.imageUrl || defaultProd?.imageUrl || defaultProd?.image_url;
@@ -259,17 +279,16 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (defaultProd?.b2bConversion || 12)),
               };
             });
-            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id) && !existingNames.has(dp.name.toLowerCase().trim()));
+            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id) && !existingSkus.has(dp.sku));
             const finalProducts = [...enriched, ...missingDefaults];
             setProducts(finalProducts);
           } else {
             setProducts(INITIAL_PRODUCTS);
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
           }
         } catch {
           setProducts(INITIAL_PRODUCTS);
         }
-      } else {
-        setProducts(INITIAL_PRODUCTS);
       }
 
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
