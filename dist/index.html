@@ -2422,13 +2422,26 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! 🚚�
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => { e.target.src = 'https://placehold.co/300x200/E85D04/FFFFFF?text=Shaqueen'; }}
                           />
-                          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-extrabold text-[#2B1E16] shadow-xs">
+                          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[10px] font-extrabold text-[#2B1E16] shadow-xs">
                             {p.category}
+                          </span>
+                          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-brand-500 text-white text-[10px] font-extrabold shadow-xs">
+                            {(p.name || '').toLowerCase().includes('super pedas') ? '🔥 Best Seller' : (p.name || '').toLowerCase().includes('pedas') ? '🌶️ Terlaris' : p.category === 'Paket Bundle' ? '🎁 Paket Hemat' : p.category === 'Pilus' ? '⭐ Favorit' : '🍲 Rasa Otentik'}
                           </span>
                         </div>
                         <div className="space-y-1.5 flex-1">
-                          <h4 className="font-extrabold text-sm text-[#2B1E16]">{p.name}</h4>
-                          <p className="text-xs text-[#2B1E16]/70 line-clamp-2">{p.desc}</p>
+                          <h4 className="font-extrabold text-sm text-[#2B1E16] leading-snug">{p.name}</h4>
+                          <p className="text-xs text-[#2B1E16]/70 line-clamp-2">{p.desc || p.description || 'Camilan khas Priangan Bandung gurih renyah dengan bumbu rempah asli Shaqueen Food.'}</p>
+                          <div className="pt-1 flex items-center gap-2 text-[11px] text-[#2B1E16]/60">
+                            <span className="px-2 py-0.5 rounded-md bg-sage-50 text-sage-700 font-bold text-[10px]">
+                              Stok: {p.stock} pcs
+                            </span>
+                            {p.b2bUnit && (
+                              <span className="text-[10px] font-medium text-slate-500">
+                                1 {p.b2bUnit} = {p.b2bConversion || 12} pcs
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="pt-3 border-t border-[#2B1E16]/10 flex items-center justify-between text-xs">
                           <div>

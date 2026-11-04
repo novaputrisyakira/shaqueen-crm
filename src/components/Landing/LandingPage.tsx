@@ -17,43 +17,20 @@ import {
   Layers
 } from 'lucide-react';
 
+import { useCRM } from '@/context/CRMContext';
+import { formatRupiah } from '@/lib/utils';
+import defaultProductsData from '@/data/products.json';
+import { Product } from '@/lib/types';
+
 interface LandingPageProps {
   onOpenLogin: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
-  const showcaseProducts = [
-    {
-      name: 'Cuanki Instan Super Pedas',
-      weight: '150g',
-      category: 'Cuanki',
-      b2cPrice: 'Rp 18.000',
-      b2bPrice: 'Rp 13.000',
-      tag: '🔥 Best Seller',
-      img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60',
-      desc: 'Kuah gurih pedas nampol khas Bandung dengan siomay & tahu kering renyah.'
-    },
-    {
-      name: 'Cuanki Ori Kaldu Sapi',
-      weight: '150g',
-      category: 'Cuanki',
-      b2cPrice: 'Rp 18.000',
-      b2bPrice: 'Rp 13.000',
-      tag: '🍲 Rasa Otentik',
-      img: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=60',
-      desc: 'Kaldu sapi asli dengan aroma bawang goreng harum dan rempah pilihan.'
-    },
-    {
-      name: 'Keripik Moringa Spicy Cheese',
-      weight: '100g',
-      category: 'Keripik',
-      b2cPrice: 'Rp 16.000',
-      b2bPrice: 'Rp 11.500',
-      tag: '🌿 Sehat & Gurih',
-      img: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=60',
-      desc: 'Daun kelor bernutrisi tinggi, renyah dengan taburan keju pedas spesial.'
-    },
-  ];
+  const { products } = useCRM();
+  const displayProducts: Product[] = (products && products.length > 0)
+    ? products
+    : (defaultProductsData as Product[]);
 
   return (
     <div className="min-h-screen bg-[#F4F1DE] text-[#2B1E16] font-sans selection:bg-[#E85D04] selection:text-white relative overflow-hidden">
@@ -203,33 +180,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
 
                 {/* Appetizing Product Cards Preview */}
                 <div className="space-y-3">
-                  {showcaseProducts.map((p, idx) => (
-                    <div 
-                      key={idx}
-                      className="p-3 rounded-2xl bg-[#F4F1DE]/50 hover:bg-[#F4F1DE] border border-[#2B1E16]/10 flex items-center gap-3.5 transition-all duration-200"
-                    >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-[#2B1E16]/10 shrink-0 shadow-2xs">
-                        <img 
-                          src={p.img} 
-                          alt={p.name}
-                          className="w-full h-full object-cover" 
-                          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100/E85D04/FFFFFF?text=SQ'; }}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-extrabold text-xs text-[#2B1E16] truncate">{p.name}</h4>
-                          <span className="text-[10px] text-[#E85D04] font-bold shrink-0">{p.tag}</span>
+                  {displayProducts.slice(0, 3).map((p) => {
+                    const pImg = p.imageUrl || p.image_url || 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60';
+                    const pTag = p.name.toLowerCase().includes('super pedas')
+                      ? '🔥 Best Seller'
+                      : p.name.toLowerCase().includes('pedas')
+                      ? '🌶️ Terlaris'
+                      : p.category === 'Paket Bundle'
+                      ? '🎁 Hemat'
+                      : '🍲 Otentik';
+
+                    return (
+                      <div 
+                        key={p.id}
+                        className="p-3 rounded-2xl bg-[#F4F1DE]/50 hover:bg-[#F4F1DE] border border-[#2B1E16]/10 flex items-center gap-3.5 transition-all duration-200"
+                      >
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-[#2B1E16]/10 shrink-0 shadow-2xs">
+                          <img 
+                            src={pImg} 
+                            alt={p.name}
+                            className="w-full h-full object-cover" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100/E85D04/FFFFFF?text=SQ'; }}
+                          />
                         </div>
-                        <p className="text-[10px] text-[#2B1E16]/65 line-clamp-1 mt-0.5">{p.desc}</p>
-                        <div className="flex items-center gap-2 mt-1.5 text-[11px]">
-                          <span className="font-black text-[#E85D04]">{p.b2cPrice}</span>
-                          <span className="text-[#2B1E16]/30">•</span>
-                          <span className="font-bold text-[#40796C]">B2B: {p.b2bPrice}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-extrabold text-xs text-[#2B1E16] truncate">{p.name}</h4>
+                            <span className="text-[10px] text-[#E85D04] font-bold shrink-0">{pTag}</span>
+                          </div>
+                          <p className="text-[10px] text-[#2B1E16]/65 line-clamp-1 mt-0.5">{p.description || 'Camilan khas Priangan Bandung gurih renyah.'}</p>
+                          <div className="flex items-center gap-2 mt-1.5 text-[11px]">
+                            <span className="font-black text-[#E85D04]">{formatRupiah(p.b2cPrice)}</span>
+                            <span className="text-[#2B1E16]/30">•</span>
+                            <span className="font-bold text-[#40796C]">B2B: {formatRupiah(p.b2bPrice)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Floating Metric Pill */}
@@ -367,41 +355,68 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {showcaseProducts.map((p, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white rounded-3xl p-5 border border-[#2B1E16]/10 shadow-[0_4px_20px_-2px_rgba(43,30,22,0.06)] hover:shadow-xl transition-all duration-200 flex flex-col justify-between space-y-4 hover:-translate-y-1"
-              >
-                <div className="w-full h-44 rounded-2xl overflow-hidden bg-slate-100 border border-[#2B1E16]/10 relative">
-                  <img
-                    src={p.img}
-                    alt={p.name}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x200/E85D04/FFFFFF?text=Shaqueen'; }}
-                  />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-extrabold text-[#2B1E16] shadow-xs">
-                    {p.category}
-                  </span>
-                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#E85D04] text-white text-[10px] font-extrabold shadow-xs">
-                    {p.tag}
-                  </span>
-                </div>
-                <div className="space-y-1.5 flex-1">
-                  <h4 className="font-extrabold text-sm text-[#2B1E16]">{p.name} ({p.weight})</h4>
-                  <p className="text-xs text-[#2B1E16]/70 line-clamp-2">{p.desc}</p>
-                </div>
-                <div className="pt-3 border-t border-[#2B1E16]/10 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] text-[#2B1E16]/50 block">Retail (B2C)</span>
-                    <span className="font-black text-[#E85D04] text-sm">{p.b2cPrice}</span>
+            {displayProducts.map((p) => {
+              const pImg = p.imageUrl || p.image_url || 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=60';
+              const pTag = p.name.toLowerCase().includes('super pedas')
+                ? '🔥 Best Seller'
+                : p.name.toLowerCase().includes('pedas')
+                ? '🌶️ Terlaris'
+                : p.category === 'Paket Bundle'
+                ? '🎁 Paket Hemat'
+                : p.category === 'Pilus'
+                ? '⭐ Favorit'
+                : '🍲 Rasa Otentik';
+
+              return (
+                <div 
+                  key={p.id} 
+                  className="bg-white rounded-3xl p-5 border border-[#2B1E16]/10 shadow-[0_4px_20px_-2px_rgba(43,30,22,0.06)] hover:shadow-xl transition-all duration-200 flex flex-col justify-between space-y-4 hover:-translate-y-1"
+                >
+                  <div className="w-full h-44 rounded-2xl overflow-hidden bg-slate-100 border border-[#2B1E16]/10 relative">
+                    <img
+                      src={pImg}
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x200/E85D04/FFFFFF?text=Shaqueen'; }}
+                    />
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[10px] font-extrabold text-[#2B1E16] shadow-xs">
+                      {p.category}
+                    </span>
+                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#E85D04] text-white text-[10px] font-extrabold shadow-xs">
+                      {pTag}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#2B1E16]/50 block">Grosir (B2B)</span>
-                    <span className="font-bold text-[#40796C] text-sm">{p.b2bPrice}</span>
+
+                  <div className="space-y-1.5 flex-1">
+                    <h4 className="font-extrabold text-sm text-[#2B1E16] leading-snug">{p.name}</h4>
+                    <p className="text-xs text-[#2B1E16]/70 line-clamp-2">
+                      {p.description || 'Camilan khas Priangan Bandung gurih renyah dengan bumbu rempah asli Shaqueen Food.'}
+                    </p>
+                    <div className="pt-1 flex items-center gap-2 text-[11px] text-[#2B1E16]/60">
+                      <span className="px-2 py-0.5 rounded-md bg-[#40796C]/10 text-[#40796C] font-bold text-[10px]">
+                        Stok: {p.stock} pcs
+                      </span>
+                      {p.b2bUnit && (
+                        <span className="text-[10px] font-medium text-slate-500">
+                          1 {p.b2bUnit} = {p.b2bConversion || 12} pcs
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#2B1E16]/10 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-[10px] text-[#2B1E16]/50 block font-medium">Retail (B2C)</span>
+                      <span className="font-black text-[#E85D04] text-sm">{formatRupiah(p.b2cPrice)}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-[#2B1E16]/50 block font-medium">Grosir (B2B)</span>
+                      <span className="font-extrabold text-[#40796C] text-sm">{formatRupiah(p.b2bPrice)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
