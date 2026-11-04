@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { RetailCustomer, B2COrder, OrderPlatform } from '@/lib/types';
 import { formatRupiah, formatDateIndo, cleanPhoneNumber, createDirectWALink, paginateArray } from '@/lib/utils';
@@ -57,39 +57,52 @@ export const CustomerListView: React.FC<CustomerListViewProps> = ({
   const [orderPage, setOrderPage] = useState(1);
   const [orderPerPage, setOrderPerPage] = useState(6);
 
-  // Filter customers
-  const filteredCustomers = customers.filter((cust) => {
-    const matchesSearch =
-      cust.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cust.phone.includes(searchQuery) ||
-      cust.city.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filter customers (Memoized)
+  const filteredCustomers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return customers.filter((cust) => {
+      const matchesSearch =
+        !q ||
+        cust.name.toLowerCase().includes(q) ||
+        cust.phone.includes(q) ||
+        cust.city.toLowerCase().includes(q);
 
-    const matchesPlatform = platformFilter === 'all' || cust.platform === platformFilter;
-    const matchesTag =
-      tagFilter === 'all' ||
-      cust.tag === tagFilter ||
-      (tagFilter === 'Pelanggan Baru' && cust.tag === 'Baru') ||
-      (tagFilter === 'Pelanggan Loyal' && cust.tag === 'Loyal') ||
-      (tagFilter === 'At-Risk (Jarang Beli)' && cust.tag === 'At-Risk');
+      const matchesPlatform = platformFilter === 'all' || cust.platform === platformFilter;
+      const matchesTag =
+        tagFilter === 'all' ||
+        cust.tag === tagFilter ||
+        (tagFilter === 'Pelanggan Baru' && cust.tag === 'Baru') ||
+        (tagFilter === 'Pelanggan Loyal' && cust.tag === 'Loyal') ||
+        (tagFilter === 'At-Risk (Jarang Beli)' && cust.tag === 'At-Risk');
 
-    return matchesSearch && matchesPlatform && matchesTag;
-  });
+      return matchesSearch && matchesPlatform && matchesTag;
+    });
+  }, [customers, searchQuery, platformFilter, tagFilter]);
 
-  // Filter orders
-  const filteredOrders = orders.filter((ord) => {
-    const matchesSearch =
-      ord.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ord.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ord.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filter orders (Memoized)
+  const filteredOrders = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return orders.filter((ord) => {
+      const matchesSearch =
+        !q ||
+        ord.customerName.toLowerCase().includes(q) ||
+        ord.productName.toLowerCase().includes(q) ||
+        ord.orderNumber.toLowerCase().includes(q);
 
-    const matchesPlatform = platformFilter === 'all' || ord.platform === platformFilter;
-    const matchesStage = stageFilter === 'all' || ord.pipelineStage === stageFilter;
+      const matchesPlatform = platformFilter === 'all' || ord.platform === platformFilter;
+      const matchesStage = stageFilter === 'all' || ord.pipelineStage === stageFilter;
 
-    return matchesSearch && matchesPlatform && matchesStage;
-  });
+      return matchesSearch && matchesPlatform && matchesStage;
+    });
+  }, [orders, searchQuery, platformFilter, stageFilter]);
 
-  const customerPagination = paginateArray(filteredCustomers, custPage, custPerPage);
-  const orderPagination = paginateArray(filteredOrders, orderPage, orderPerPage);
+  const customerPagination = useMemo(() => {
+    return paginateArray(filteredCustomers, custPage, custPerPage);
+  }, [filteredCustomers, custPage, custPerPage]);
+
+  const orderPagination = useMemo(() => {
+    return paginateArray(filteredOrders, orderPage, orderPerPage);
+  }, [filteredOrders, orderPage, orderPerPage]);
 
   const handleEditCustomer = (c: RetailCustomer) => {
     setCustomerToEdit(c);

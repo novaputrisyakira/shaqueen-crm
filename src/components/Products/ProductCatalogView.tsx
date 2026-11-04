@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { Product, ProductCategory } from '@/lib/types';
 import { formatRupiah, formatNumber, paginateArray } from '@/lib/utils';
@@ -79,23 +79,29 @@ export const ProductCatalogView: React.FC = () => {
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // Filter products
-  const filteredProducts = products.filter((prod) => {
-    const matchesSearch =
-      prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prod.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prod.category.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filter products (Memoized)
+  const filteredProducts = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return products.filter((prod) => {
+      const matchesSearch =
+        !q ||
+        prod.name.toLowerCase().includes(q) ||
+        prod.sku.toLowerCase().includes(q) ||
+        prod.category.toLowerCase().includes(q);
 
-    const matchesCategory =
-      selectedCategory === 'all' || prod.category === selectedCategory;
+      const matchesCategory =
+        selectedCategory === 'all' || prod.category === selectedCategory;
 
-    const matchesStatus =
-      selectedStatus === 'all' || prod.status === selectedStatus;
+      const matchesStatus =
+        selectedStatus === 'all' || prod.status === selectedStatus;
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  }, [products, searchQuery, selectedCategory, selectedStatus]);
 
-  const pagination = paginateArray(filteredProducts, currentPage, perPage);
+  const pagination = useMemo(() => {
+    return paginateArray(filteredProducts, currentPage, perPage);
+  }, [filteredProducts, currentPage, perPage]);
 
   const handleEdit = (prod: Product) => {
     setProductToEdit(prod);

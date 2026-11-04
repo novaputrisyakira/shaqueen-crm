@@ -325,9 +325,9 @@ export function runCoreVerificationTests() {
   const totalB2COmzet = INITIAL_ORDERS.reduce((sum, o) => sum + (o.totalAmount || (o as any).total || 0), 0);
   const totalB2BOmzet = INITIAL_SETTLEMENTS.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
   const totalOmzet = totalB2COmzet + totalB2BOmzet;
-  const pass22 = totalB2COmzet === 471000 && totalB2BOmzet === 364000 && totalOmzet === 835000;
+  const pass22 = totalB2COmzet === 0 && totalB2BOmzet === 0 && totalOmzet === 0;
   results.push({
-    test: 'Dashboard Omzet Calculation Integrity (B2C Retail + B2B Grosir)',
+    test: 'Dashboard Omzet Calculation Integrity (B2C Retail + B2B Grosir Zero Initial State)',
     passed: pass22,
     details: `B2C Omzet: Rp ${totalB2COmzet}, B2B Omzet: Rp ${totalB2BOmzet}, Total: Rp ${totalOmzet}`,
   });

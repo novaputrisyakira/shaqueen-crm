@@ -1,22 +1,60 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { CRMProvider, useCRM } from '@/context/CRMContext';
 import { Sidebar } from '@/components/Layout/Sidebar';
 import { TopHeader } from '@/components/Layout/TopHeader';
-import { DashboardView } from '@/components/Dashboard/DashboardView';
-import { ProductCatalogView } from '@/components/Products/ProductCatalogView';
-import { CustomerListView } from '@/components/Customers/CustomerListView';
-import { KanbanBoardView } from '@/components/Pipeline/KanbanBoardView';
-import { B2BPipelineBoardView } from '@/components/Pipeline/B2BPipelineBoardView';
-import { PartnerListView } from '@/components/Partners/PartnerListView';
-import { BrandSettings } from '@/components/Settings/BrandSettings';
-import { NewTransactionModal } from '@/components/Customers/NewTransactionModal';
-import { DropStockModal } from '@/components/Partners/DropStockModal';
-import { AutoWAModal } from '@/components/Pipeline/AutoWAModal';
-import { LoginModal } from '@/components/Auth/LoginModal';
 import { LandingPage } from '@/components/Landing/LandingPage';
 import { B2COrder } from '@/lib/types';
+
+const ViewLoadingPlaceholder = ({ title }: { title: string }) => (
+  <div className="flex items-center justify-center p-12 min-h-[300px] bg-white/60 rounded-3xl border border-slate-200/60 animate-pulse">
+    <div className="flex flex-col items-center gap-2">
+      <div className="w-8 h-8 rounded-xl bg-[#E85D04]/20 animate-spin flex items-center justify-center text-[#E85D04] font-bold text-xs">
+        SQ
+      </div>
+      <span className="text-xs font-semibold text-slate-500">Memuat {title}...</span>
+    </div>
+  </div>
+);
+
+// Dynamic lazy-loaded view chunks
+const DashboardView = dynamic(() => import('@/components/Dashboard/DashboardView').then(m => m.DashboardView), {
+  loading: () => <ViewLoadingPlaceholder title="Dashboard" />,
+  ssr: false,
+});
+const ProductCatalogView = dynamic(() => import('@/components/Products/ProductCatalogView').then(m => m.ProductCatalogView), {
+  loading: () => <ViewLoadingPlaceholder title="Master Produk" />,
+  ssr: false,
+});
+const CustomerListView = dynamic(() => import('@/components/Customers/CustomerListView').then(m => m.CustomerListView), {
+  loading: () => <ViewLoadingPlaceholder title="Pelanggan Retail" />,
+  ssr: false,
+});
+const KanbanBoardView = dynamic(() => import('@/components/Pipeline/KanbanBoardView').then(m => m.KanbanBoardView), {
+  loading: () => <ViewLoadingPlaceholder title="Pipeline WA Retail" />,
+  ssr: false,
+});
+const B2BPipelineBoardView = dynamic(() => import('@/components/Pipeline/B2BPipelineBoardView').then(m => m.B2BPipelineBoardView), {
+  loading: () => <ViewLoadingPlaceholder title="Pipeline Restock B2B" />,
+  ssr: false,
+});
+const PartnerListView = dynamic(() => import('@/components/Partners/PartnerListView').then(m => m.PartnerListView), {
+  loading: () => <ViewLoadingPlaceholder title="Mitra Reseller B2B" />,
+  ssr: false,
+});
+const BrandSettings = dynamic(() => import('@/components/Settings/BrandSettings').then(m => m.BrandSettings), {
+  loading: () => <ViewLoadingPlaceholder title="Pengaturan Sistem" />,
+  ssr: false,
+});
+
+// Modals: code-split & lazy loaded on demand
+const NewTransactionModal = dynamic(() => import('@/components/Customers/NewTransactionModal').then(m => m.NewTransactionModal), { ssr: false });
+const DropStockModal = dynamic(() => import('@/components/Partners/DropStockModal').then(m => m.DropStockModal), { ssr: false });
+const AutoWAModal = dynamic(() => import('@/components/Pipeline/AutoWAModal').then(m => m.AutoWAModal), { ssr: false });
+const LoginModal = dynamic(() => import('@/components/Auth/LoginModal').then(m => m.LoginModal), { ssr: false });
+
 
 function CRMContent() {
   const { activeTab, isLoaded, isLoggedIn, setIsLoggedIn } = useCRM();
@@ -55,14 +93,16 @@ function CRMContent() {
     return (
       <>
         <LandingPage onOpenLogin={() => setIsLoginModalOpen(true)} />
-        <LoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-          onLoginSuccess={() => {
-            setIsLoggedIn(true);
-            setIsLoginModalOpen(false);
-          }}
-        />
+        {isLoginModalOpen && (
+          <LoginModal
+            isOpen={isLoginModalOpen}
+            onClose={() => setIsLoginModalOpen(false)}
+            onLoginSuccess={() => {
+              setIsLoggedIn(true);
+              setIsLoginModalOpen(false);
+            }}
+          />
+        )}
       </>
     );
   }
@@ -120,24 +160,30 @@ function CRMContent() {
       </div>
 
       {/* 3. GLOBAL MODALS */}
-      <NewTransactionModal
-        isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-      />
+      {isOrderModalOpen && (
+        <NewTransactionModal
+          isOpen={isOrderModalOpen}
+          onClose={() => setIsOrderModalOpen(false)}
+        />
+      )}
 
-      <DropStockModal
-        isOpen={isDropModalOpen}
-        onClose={() => setIsDropModalOpen(false)}
-      />
+      {isDropModalOpen && (
+        <DropStockModal
+          isOpen={isDropModalOpen}
+          onClose={() => setIsDropModalOpen(false)}
+        />
+      )}
 
-      <AutoWAModal
-        isOpen={isWAModalOpen}
-        onClose={() => {
-          setIsWAModalOpen(false);
-          setSelectedOrderForWA(null);
-        }}
-        order={selectedOrderForWA}
-      />
+      {isWAModalOpen && (
+        <AutoWAModal
+          isOpen={isWAModalOpen}
+          onClose={() => {
+            setIsWAModalOpen(false);
+            setSelectedOrderForWA(null);
+          }}
+          order={selectedOrderForWA}
+        />
+      )}
     </div>
   );
 }

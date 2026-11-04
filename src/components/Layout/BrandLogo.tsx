@@ -31,6 +31,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         <img 
           src={settings.brandLogoUrl || '/shaqueen-logo.png'} 
           alt={settings.brandName || "Shaqueen Food"} 
+          loading="eager"
+          decoding="async"
           onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/80x80/E85D04/FFFFFF?text=SF'; }}
           className="w-full h-full object-contain rounded-xl"
         />

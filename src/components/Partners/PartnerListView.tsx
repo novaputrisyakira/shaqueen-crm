@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { B2BPartner, B2BSettlement, PartnerStatus } from '@/lib/types';
 import { formatRupiah, formatDateIndo, cleanPhoneNumber, createDirectWALink, paginateArray } from '@/lib/utils';
@@ -54,30 +54,43 @@ export const PartnerListView: React.FC = () => {
   const [stlPage, setStlPage] = useState(1);
   const [stlPerPage, setStlPerPage] = useState(6);
 
-  // Filter partners
-  const filteredPartners = partners.filter((p) => {
-    const matchesSearch =
-      p.storeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.ownerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.phone.includes(searchQuery);
+  // Filter partners (Memoized)
+  const filteredPartners = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return partners.filter((p) => {
+      const matchesSearch =
+        !q ||
+        p.storeName.toLowerCase().includes(q) ||
+        p.ownerName.toLowerCase().includes(q) ||
+        p.address.toLowerCase().includes(q) ||
+        p.phone.includes(q);
 
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [partners, searchQuery, statusFilter]);
 
-  // Filter settlements (Riwayat Transaksi Grosir)
-  const filteredSettlements = settlements.filter((s) => {
-    return (
-      s.partnerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.notes && s.notes.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  });
+  // Filter settlements (Riwayat Transaksi Grosir) (Memoized)
+  const filteredSettlements = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return settlements.filter((s) => {
+      return (
+        !q ||
+        s.partnerName.toLowerCase().includes(q) ||
+        s.productName.toLowerCase().includes(q) ||
+        (s.notes && s.notes.toLowerCase().includes(q))
+      );
+    });
+  }, [settlements, searchQuery]);
 
-  const partnerPagination = paginateArray(filteredPartners, partnerPage, partnerPerPage);
-  const settlementPagination = paginateArray(filteredSettlements, stlPage, stlPerPage);
+  const partnerPagination = useMemo(() => {
+    return paginateArray(filteredPartners, partnerPage, partnerPerPage);
+  }, [filteredPartners, partnerPage, partnerPerPage]);
+
+  const settlementPagination = useMemo(() => {
+    return paginateArray(filteredSettlements, stlPage, stlPerPage);
+  }, [filteredSettlements, stlPage, stlPerPage]);
 
   const handleEditPartner = (p: B2BPartner) => {
     setPartnerToEdit(p);
@@ -104,24 +117,42 @@ export const PartnerListView: React.FC = () => {
     setIsWholesaleModalOpen(true);
   };
 
-  // Performance calculations: Ranking based on Total Akumulasi Pembelian & Cartons
-  const partnerPerformance = partners.map((p) => {
-    const pSettlements = settlements.filter(s => s.partnerId === p.id);
-    const txCartons = pSettlements.reduce((sum, s) => sum + (s.quantitySold || 0), 0);
-    const txRevenue = pSettlements.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
-    const totalCartons = p.totalPurchasedCartons !== undefined ? p.totalPurchasedCartons : txCartons;
-    const totalRevenue = p.totalSettledAmount !== undefined ? p.totalSettledAmount : txRevenue;
+  // Performance calculations: Ranking based on Total Akumulasi Pembelian & Cartons (Memoized)
+  const partnerPerformance = useMemo(() => {
+    // Pre-calculate settlements map by partnerId
+    const settlementsByPartner = new Map<string, { cartons: number; revenue: number }>();
+    for (const s of settlements) {
+      if (!s.partnerId) continue;
+      const cur = settlementsByPartner.get(s.partnerId) || { cartons: 0, revenue: 0 };
+      cur.cartons += (s.quantitySold || 0);
+      cur.revenue += (s.totalCollectedAmount || (s as any).totalCollected || 0);
+      settlementsByPartner.set(s.partnerId, cur);
+    }
 
-    return {
-      partner: p,
-      totalCartons,
-      totalRevenue,
-    };
-  }).sort((a, b) => b.totalRevenue - a.totalRevenue || b.totalCartons - a.totalCartons);
+    return partners.map((p) => {
+      const pStats = settlementsByPartner.get(p.id) || { cartons: 0, revenue: 0 };
+      const totalCartons = p.totalPurchasedCartons !== undefined ? p.totalPurchasedCartons : pStats.cartons;
+      const totalRevenue = p.totalSettledAmount !== undefined ? p.totalSettledAmount : pStats.revenue;
 
-  const highestRevenue = Math.max(...partnerPerformance.map(p => p.totalRevenue), 1);
-  const totalB2BOmzetAll = settlements.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
-  const totalCartonsAll = settlements.reduce((sum, s) => sum + (s.quantitySold || 0), 0);
+      return {
+        partner: p,
+        totalCartons,
+        totalRevenue,
+      };
+    }).sort((a, b) => b.totalRevenue - a.totalRevenue || b.totalCartons - a.totalCartons);
+  }, [partners, settlements]);
+
+  const highestRevenue = useMemo(() => {
+    return Math.max(...partnerPerformance.map(p => p.totalRevenue), 1);
+  }, [partnerPerformance]);
+
+  const totalB2BOmzetAll = useMemo(() => {
+    return settlements.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
+  }, [settlements]);
+
+  const totalCartonsAll = useMemo(() => {
+    return settlements.reduce((sum, s) => sum + (s.quantitySold || 0), 0);
+  }, [settlements]);
 
   return (
     <div className="space-y-6 pb-12">

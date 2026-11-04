@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { formatRupiah } from '@/lib/utils';
 import { Store, Trophy, MapPin, ArrowRight } from 'lucide-react';
@@ -8,33 +8,35 @@ import { Store, Trophy, MapPin, ArrowRight } from 'lucide-react';
 export const TopPartnersTable: React.FC = () => {
   const { partners, settlements, setActiveTab } = useCRM();
 
-  // Leaderboard: HANYA menampilkan toko dengan 'Total Akumulasi Pembelian' di atas Rp 0.
-  // Jika riwayat transaksi dihapus dan totalnya jadi 0, otomatis hilangkan toko tersebut dari leaderboard.
-  const sortedPartners = partners
-    .map(p => {
-      const partnerTx = settlements.filter(s => s.partnerId === p.id || (s.partnerName && p.storeName && s.partnerName.toLowerCase().trim() === p.storeName.toLowerCase().trim()));
-      const txRevenue = partnerTx.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
-      const txCartons = partnerTx.reduce((sum, s) => sum + (s.quantitySold || (s as any).qty || 0), 0);
+  // Leaderboard: HANYA menampilkan toko dengan 'Total Akumulasi Pembelian' di atas Rp 0. (Memoized)
+  const sortedPartners = useMemo(() => {
+    return partners
+      .map(p => {
+        const pStore = p.storeName ? p.storeName.toLowerCase().trim() : '';
+        const partnerTx = settlements.filter(s => s.partnerId === p.id || (s.partnerName && pStore && s.partnerName.toLowerCase().trim() === pStore));
+        const txRevenue = partnerTx.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
+        const txCartons = partnerTx.reduce((sum, s) => sum + (s.quantitySold || (s as any).qty || 0), 0);
 
-      let effectiveRevenue = 0;
-      if (partnerTx.length > 0) {
-        effectiveRevenue = (p.totalSettledAmount !== undefined && p.totalSettledAmount > 0) ? p.totalSettledAmount : txRevenue;
-      } else {
-        effectiveRevenue = (settlements.length === 0 && p.totalSettledAmount !== undefined) ? p.totalSettledAmount : 0;
-      }
+        let effectiveRevenue = 0;
+        if (partnerTx.length > 0) {
+          effectiveRevenue = (p.totalSettledAmount !== undefined && p.totalSettledAmount > 0) ? p.totalSettledAmount : txRevenue;
+        } else {
+          effectiveRevenue = (settlements.length === 0 && p.totalSettledAmount !== undefined) ? p.totalSettledAmount : 0;
+        }
 
-      const effectiveCartons = partnerTx.length > 0
-        ? ((p.totalPurchasedCartons !== undefined && p.totalPurchasedCartons > 0) ? p.totalPurchasedCartons : txCartons)
-        : 0;
+        const effectiveCartons = partnerTx.length > 0
+          ? ((p.totalPurchasedCartons !== undefined && p.totalPurchasedCartons > 0) ? p.totalPurchasedCartons : txCartons)
+          : 0;
 
-      return {
-        ...p,
-        totalSettledAmount: effectiveRevenue,
-        totalPurchasedCartons: effectiveCartons,
-      };
-    })
-    .filter(p => (p.totalSettledAmount || 0) > 0)
-    .sort((a, b) => (b.totalSettledAmount || 0) - (a.totalSettledAmount || 0));
+        return {
+          ...p,
+          totalSettledAmount: effectiveRevenue,
+          totalPurchasedCartons: effectiveCartons,
+        };
+      })
+      .filter(p => (p.totalSettledAmount || 0) > 0)
+      .sort((a, b) => (b.totalSettledAmount || 0) - (a.totalSettledAmount || 0));
+  }, [partners, settlements]);
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-card">

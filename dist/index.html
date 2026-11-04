@@ -226,6 +226,35 @@
       return cleaned;
     };
 
+    // Pre-mount LocalStorage Hygiene (Strict 0 Transactions & Clean Slate on Initial Load & Reloads)
+    try {
+      const DATA_VERSION = 'v20261104_official_shaqueen_permanent_zero_v9';
+      localStorage.setItem('sq_orders', '[]');
+      localStorage.setItem('shaqueen_crm_orders_v1', '[]');
+      localStorage.setItem('sq_drops', '[]');
+      localStorage.setItem('shaqueen_crm_drops_v1', '[]');
+      localStorage.setItem('sq_settlements', '[]');
+      localStorage.setItem('shaqueen_crm_settlements_v1', '[]');
+      localStorage.setItem('sq_wa_logs', '[]');
+      localStorage.setItem('shaqueen_crm_wa_logs_v1', '[]');
+      sessionStorage.removeItem('sq_orders');
+      sessionStorage.removeItem('shaqueen_crm_orders_v1');
+      sessionStorage.removeItem('sq_settlements');
+      sessionStorage.removeItem('shaqueen_crm_settlements_v1');
+      sessionStorage.removeItem('sq_drops');
+      sessionStorage.removeItem('shaqueen_crm_drops_v1');
+      sessionStorage.removeItem('sq_wa_logs');
+      sessionStorage.removeItem('shaqueen_crm_wa_logs_v1');
+      localStorage.removeItem('orders');
+      localStorage.removeItem('settlements');
+      localStorage.removeItem('drops');
+      localStorage.removeItem('wa_logs');
+      localStorage.removeItem('sq_transactions');
+      localStorage.removeItem('transactions');
+      localStorage.removeItem('shaqueen_orders');
+      localStorage.setItem('shaqueen_data_version', DATA_VERSION);
+    } catch(e) {}
+
     // Default Seed Data with Appetizing Food Photos
     const INITIAL_PRODUCTS = [
       {
@@ -1662,21 +1691,27 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
       const [brandLogo, setBrandLogo] = useState(() => localStorage.getItem('sq_brand_logo') || '/shaqueen-logo.png');
       
       const [products, setProducts] = useState(() => {
-        const DATA_VERSION = 'v20261104_official_shaqueen_fresh_v6';
+        const DATA_VERSION = 'v20261104_official_shaqueen_permanent_zero_v9';
         const curVer = localStorage.getItem('shaqueen_data_version');
         const saved = localStorage.getItem('sq_products') || localStorage.getItem('shaqueen_crm_products_v1');
 
         if (curVer !== DATA_VERSION || !saved) {
           localStorage.setItem('sq_products', JSON.stringify(INITIAL_PRODUCTS));
           localStorage.setItem('shaqueen_crm_products_v1', JSON.stringify(INITIAL_PRODUCTS));
-          localStorage.setItem('sq_customers', JSON.stringify(INITIAL_CUSTOMERS));
-          localStorage.setItem('shaqueen_crm_customers_v1', JSON.stringify(INITIAL_CUSTOMERS));
-          localStorage.setItem('sq_orders', JSON.stringify(INITIAL_ORDERS));
-          localStorage.setItem('shaqueen_crm_orders_v1', JSON.stringify(INITIAL_ORDERS));
-          localStorage.setItem('sq_partners', JSON.stringify(INITIAL_PARTNERS));
-          localStorage.setItem('shaqueen_crm_partners_v1', JSON.stringify(INITIAL_PARTNERS));
-          localStorage.setItem('sq_settlements', JSON.stringify(INITIAL_SETTLEMENTS));
-          localStorage.setItem('shaqueen_crm_settlements_v1', JSON.stringify(INITIAL_SETTLEMENTS));
+          const cleanCust = INITIAL_CUSTOMERS.map(c => ({ ...c, totalOrders: 0, totalSpent: 0, lastOrderDate: '' }));
+          localStorage.setItem('sq_customers', JSON.stringify(cleanCust));
+          localStorage.setItem('shaqueen_crm_customers_v1', JSON.stringify(cleanCust));
+          localStorage.setItem('sq_orders', '[]');
+          localStorage.setItem('shaqueen_crm_orders_v1', '[]');
+          const cleanPt = INITIAL_PARTNERS.map(p => ({ ...p, totalPurchasedCartons: 0, totalSettledAmount: 0 }));
+          localStorage.setItem('sq_partners', JSON.stringify(cleanPt));
+          localStorage.setItem('shaqueen_crm_partners_v1', JSON.stringify(cleanPt));
+          localStorage.setItem('sq_drops', '[]');
+          localStorage.setItem('shaqueen_crm_drops_v1', '[]');
+          localStorage.setItem('sq_settlements', '[]');
+          localStorage.setItem('shaqueen_crm_settlements_v1', '[]');
+          localStorage.setItem('sq_wa_logs', '[]');
+          localStorage.setItem('shaqueen_crm_wa_logs_v1', '[]');
           localStorage.setItem('shaqueen_data_version', DATA_VERSION);
           return INITIAL_PRODUCTS;
         }
@@ -1706,36 +1741,35 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
         }
         return INITIAL_PRODUCTS;
       });
-      const [customers, setCustomers] = useState(() => safeParse('sq_customers', null) || safeParse('shaqueen_crm_customers_v1', INITIAL_CUSTOMERS));
-      const [orders, setOrders] = useState(() => {
-        const raw = safeParse('sq_orders', null) || safeParse('shaqueen_crm_orders_v1', INITIAL_ORDERS);
-        return (raw || []).map(o => ({
-          ...o,
-          stage: o.stage || o.pipelineStage || 'diproses',
-          pipelineStage: o.pipelineStage || o.stage || 'diproses',
-          phone: o.phone || o.customerPhone || '',
-          customerPhone: o.customerPhone || o.phone || '',
-          total: o.total !== undefined ? o.total : (o.totalAmount || 0),
-          totalAmount: o.totalAmount !== undefined ? o.totalAmount : (o.total || 0),
-          resi: o.resi || o.trackingNumber || '',
-          trackingNumber: o.trackingNumber || o.resi || '',
+      const [customers, setCustomers] = useState(() => {
+        const raw = safeParse('sq_customers', null) || safeParse('shaqueen_crm_customers_v1', INITIAL_CUSTOMERS);
+        let list = Array.isArray(raw) && raw.length > 0 ? raw : INITIAL_CUSTOMERS;
+        const existingIds = new Set(list.map(c => c.id));
+        const missing = INITIAL_CUSTOMERS.filter(ic => !existingIds.has(ic.id));
+        const full = [...list, ...missing];
+        return full.map(c => ({
+          ...c,
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrderDate: '',
+          tag: 'Pelanggan Baru'
         }));
       });
-      const [partners, setPartners] = useState(() => safeParse('sq_partners', null) || safeParse('shaqueen_crm_partners_v1', INITIAL_PARTNERS));
-      const [drops, setDrops] = useState(() => safeParse('sq_drops', null) || safeParse('shaqueen_crm_drops_v1', INITIAL_DROPS));
-      const [settlements, setSettlements] = useState(() => {
-        const raw = safeParse('sq_settlements', null) || safeParse('shaqueen_crm_settlements_v1', INITIAL_SETTLEMENTS);
-        const validStages = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
-        return (raw || []).map(s => {
-          const stg = (s.pipelineStage && validStages.includes(s.pipelineStage)) ? s.pipelineStage :
-            (s.stage && validStages.includes(s.stage)) ? s.stage : 'barang_baru_turun';
-          return {
-            ...s,
-            stage: stg,
-            pipelineStage: stg
-          };
-        });
+      const [orders, setOrders] = useState([]);
+      const [partners, setPartners] = useState(() => {
+        const raw = safeParse('sq_partners', null) || safeParse('shaqueen_crm_partners_v1', INITIAL_PARTNERS);
+        let list = Array.isArray(raw) && raw.length > 0 ? raw : INITIAL_PARTNERS;
+        const existingIds = new Set(list.map(p => p.id));
+        const missing = INITIAL_PARTNERS.filter(ip => !existingIds.has(ip.id));
+        const full = [...list, ...missing];
+        return full.map(p => ({
+          ...p,
+          totalPurchasedCartons: 0,
+          totalSettledAmount: 0
+        }));
       });
+      const [drops, setDrops] = useState([]);
+      const [settlements, setSettlements] = useState([]);
       const [templates, setTemplates] = useState(() => {
         const saved = safeParse('sq_templates', null);
         return {
@@ -1743,9 +1777,7 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
           ...(saved || {})
         };
       });
-      const [waLogs, setWaLogs] = useState(() => safeParse('sq_wa_logs', [
-        { id: 'l1', name: 'Clarissa Putri', phone: '081287654321', stage: 'H+2 Review', text: 'Halo Kak Clarissa...', time: '2026-11-01 14:20' }
-      ]));
+      const [waLogs, setWaLogs] = useState([]);
 
       // Product and transaction state
       const [editingProduct, setEditingProduct] = useState(null);
@@ -1810,6 +1842,34 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
         }
       }, [showLogin]);
       useEffect(() => { localStorage.setItem('sq_brand_logo', brandLogo); }, [brandLogo]);
+      
+      // Enforce strict clean 0-transaction state in storage on mount
+      useEffect(() => {
+        localStorage.setItem('sq_orders', '[]');
+        localStorage.setItem('shaqueen_crm_orders_v1', '[]');
+        localStorage.setItem('sq_drops', '[]');
+        localStorage.setItem('shaqueen_crm_drops_v1', '[]');
+        localStorage.setItem('sq_settlements', '[]');
+        localStorage.setItem('shaqueen_crm_settlements_v1', '[]');
+        localStorage.setItem('sq_wa_logs', '[]');
+        localStorage.setItem('shaqueen_crm_wa_logs_v1', '[]');
+        sessionStorage.removeItem('sq_orders');
+        sessionStorage.removeItem('shaqueen_crm_orders_v1');
+        sessionStorage.removeItem('sq_settlements');
+        sessionStorage.removeItem('shaqueen_crm_settlements_v1');
+        sessionStorage.removeItem('sq_drops');
+        sessionStorage.removeItem('shaqueen_crm_drops_v1');
+        sessionStorage.removeItem('sq_wa_logs');
+        sessionStorage.removeItem('shaqueen_crm_wa_logs_v1');
+        localStorage.removeItem('orders');
+        localStorage.removeItem('settlements');
+        localStorage.removeItem('drops');
+        localStorage.removeItem('wa_logs');
+        localStorage.removeItem('sq_transactions');
+        localStorage.removeItem('transactions');
+        localStorage.removeItem('shaqueen_orders');
+      }, []);
+
       useEffect(() => { 
         localStorage.setItem('sq_products', JSON.stringify(products)); 
         localStorage.setItem('shaqueen_crm_products_v1', JSON.stringify(products)); 
@@ -1841,10 +1901,17 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
       useEffect(() => {
         const handleDataChanged = () => {
           const freshCust = safeParse('sq_customers', null) || safeParse('shaqueen_crm_customers_v1', null);
-          if (freshCust) setCustomers(freshCust);
+          if (freshCust && Array.isArray(freshCust)) {
+            setCustomers(freshCust.map(c => ({
+              ...c,
+              totalOrders: c.totalOrders || 0,
+              totalSpent: c.totalSpent || 0,
+              lastOrderDate: c.lastOrderDate || '',
+            })));
+          }
 
           const freshOrd = safeParse('sq_orders', null) || safeParse('shaqueen_crm_orders_v1', null);
-          if (freshOrd) {
+          if (freshOrd && Array.isArray(freshOrd)) {
             setOrders(freshOrd.map(o => ({
               ...o,
               stage: o.stage || o.pipelineStage || 'diproses',
@@ -1859,13 +1926,19 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
           }
 
           const freshPt = safeParse('sq_partners', null) || safeParse('shaqueen_crm_partners_v1', null);
-          if (freshPt) setPartners(freshPt);
+          if (freshPt && Array.isArray(freshPt)) {
+            setPartners(freshPt.map(p => ({
+              ...p,
+              totalPurchasedCartons: p.totalPurchasedCartons || 0,
+              totalSettledAmount: p.totalSettledAmount || 0,
+            })));
+          }
 
           const freshDrops = safeParse('sq_drops', null) || safeParse('shaqueen_crm_drops_v1', null);
-          if (freshDrops) setDrops(freshDrops);
+          if (freshDrops && Array.isArray(freshDrops)) setDrops(freshDrops);
 
           const freshStl = safeParse('sq_settlements', null) || safeParse('shaqueen_crm_settlements_v1', null);
-          if (freshStl) {
+          if (freshStl && Array.isArray(freshStl)) {
             const validStages = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
             setSettlements(freshStl.map(s => {
               const stg = (s.pipelineStage && validStages.includes(s.pipelineStage)) ? s.pipelineStage :
@@ -1879,10 +1952,10 @@ Ditunggu kabar baiknya ya Pak/Bu, terima kasih banyak atas kerjasamanya! ðŸššðŸ“
           }
 
           const freshProd = safeParse('sq_products', null) || safeParse('shaqueen_crm_products_v1', null);
-          if (freshProd) setProducts(freshProd);
+          if (freshProd && Array.isArray(freshProd)) setProducts(freshProd);
 
           const freshLogs = safeParse('sq_wa_logs', null) || safeParse('shaqueen_crm_wa_logs_v1', null);
-          if (freshLogs) setWaLogs(freshLogs);
+          if (freshLogs && Array.isArray(freshLogs)) setWaLogs(freshLogs);
         };
 
         window.addEventListener('shaqueen-data-changed', handleDataChanged);

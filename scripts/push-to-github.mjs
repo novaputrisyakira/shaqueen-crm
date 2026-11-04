@@ -74,7 +74,7 @@ async function autoPush(token, repoName = 'shaqueen-crm', isPrivate = false) {
       if (status) {
         console.log('Menyimpan perubahan berkas lokal ke Git...');
         runGit('add -A');
-        runGit('commit -m "chore: pembaruan berkas proyek sebelum push ke GitHub"');
+        runGit('commit -m "fix(data): ensure permanent 0 transactions and prevent rehydration on load and reload"');
       }
     } catch (_) {}
 

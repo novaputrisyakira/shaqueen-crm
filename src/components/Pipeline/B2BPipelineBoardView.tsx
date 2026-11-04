@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { B2BSettlement, B2BPipelineStage } from '@/lib/types';
 import { formatRupiah } from '@/lib/utils';
@@ -29,13 +29,17 @@ export const B2BPipelineBoardView: React.FC<B2BPipelineBoardViewProps> = ({
   const [selectedSettlementForWA, setSelectedSettlementForWA] = useState<B2BSettlement | null>(null);
   const [isWAModalOpen, setIsWAModalOpen] = useState(false);
 
-  // Filter settlements based on search query
-  const filteredSettlements = settlements.filter((s) => {
-    const matchesSearch =
-      (s.partnerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.productName || '').toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  // Filter settlements based on search query (Memoized)
+  const filteredSettlements = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return settlements;
+    return settlements.filter((s) => {
+      const matchesSearch =
+        (s.partnerName || '').toLowerCase().includes(q) ||
+        (s.productName || '').toLowerCase().includes(q);
+      return matchesSearch;
+    });
+  }, [settlements, searchQuery]);
 
   const columns: {
     id: B2BPipelineStage;
@@ -86,14 +90,19 @@ export const B2BPipelineBoardView: React.FC<B2BPipelineBoardViewProps> = ({
     }
   };
 
-  const totalWholesaleValue = filteredSettlements.reduce(
-    (sum, s) => sum + (s.totalCollectedAmount || s.totalCollected || 0),
-    0
-  );
-  const totalCartons = filteredSettlements.reduce(
-    (sum, s) => sum + (s.quantitySold || 1),
-    0
-  );
+  const totalWholesaleValue = useMemo(() => {
+    return filteredSettlements.reduce(
+      (sum, s) => sum + (s.totalCollectedAmount || s.totalCollected || 0),
+      0
+    );
+  }, [filteredSettlements]);
+
+  const totalCartons = useMemo(() => {
+    return filteredSettlements.reduce(
+      (sum, s) => sum + (s.quantitySold || 1),
+      0
+    );
+  }, [filteredSettlements]);
 
   return (
     <div className="space-y-6 pb-12">

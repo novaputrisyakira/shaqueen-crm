@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { MessageSquare, ArrowRight, Sparkles, Clock, CheckCircle } from 'lucide-react';
 import { B2COrder } from '@/lib/types';
@@ -13,18 +13,32 @@ interface DueFollowupsAlertProps {
 export const DueFollowupsAlert: React.FC<DueFollowupsAlertProps> = ({ onOpenWAModal }) => {
   const { orders, customers, setActiveTab } = useCRM();
 
-  // Find orders in H+2 or H+30 whose customer actively exists in database
-  const pendingFollowups = orders.filter((o) => {
-    const stage = o.pipelineStage || (o as any).stage;
-    const isDue = stage === 'h_plus_2' || stage === 'h_plus_30';
-    if (!isDue) return false;
-    const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
-    return customers.some(c => 
-      (o.customerId && c.id === o.customerId) ||
-      (cleanOPhone && cleanPhoneNumber(c.phone) === cleanOPhone) ||
-      (o.customerName && c.name && c.name.toLowerCase().trim() === o.customerName.toLowerCase().trim())
-    );
-  });
+  // Find orders in H+2 or H+30 whose customer actively exists in database (Memoized with Set lookups)
+  const pendingFollowups = useMemo(() => {
+    const custIdSet = new Set<string>();
+    const custPhoneSet = new Set<string>();
+    const custNameSet = new Set<string>();
+
+    for (const c of customers) {
+      if (c.id) custIdSet.add(c.id);
+      const cleanP = cleanPhoneNumber(c.phone);
+      if (cleanP) custPhoneSet.add(cleanP);
+      if (c.name) custNameSet.add(c.name.toLowerCase().trim());
+    }
+
+    return orders.filter((o) => {
+      const stage = o.pipelineStage || (o as any).stage;
+      const isDue = stage === 'h_plus_2' || stage === 'h_plus_30';
+      if (!isDue) return false;
+      const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
+      const cleanOName = (o.customerName || (o as any).name || '').toLowerCase().trim();
+      return (
+        (o.customerId && custIdSet.has(o.customerId)) ||
+        (cleanOPhone && custPhoneSet.has(cleanOPhone)) ||
+        (cleanOName && custNameSet.has(cleanOName))
+      );
+    });
+  }, [orders, customers]);
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-card">

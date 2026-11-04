@@ -18,10 +18,10 @@ import defaultSettlementsData from '../data/settlements.json';
 
 export const INITIAL_PRODUCTS: Product[] = defaultProductsData as Product[];
 export const INITIAL_CUSTOMERS: RetailCustomer[] = defaultCustomersData as RetailCustomer[];
-export const INITIAL_ORDERS: B2COrder[] = defaultOrdersData as B2COrder[];
+export const INITIAL_ORDERS: B2COrder[] = [];
 export const INITIAL_PARTNERS: B2BPartner[] = defaultPartnersData as B2BPartner[];
 export const INITIAL_DROPS: B2BDrop[] = [];
-export const INITIAL_SETTLEMENTS: B2BSettlement[] = defaultSettlementsData as B2BSettlement[];
+export const INITIAL_SETTLEMENTS: B2BSettlement[] = [];
 
 export const INITIAL_TEMPLATES: WATemplate[] = [
   {

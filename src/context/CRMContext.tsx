@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Product, 
   RetailCustomer, 
@@ -218,19 +218,13 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Data states
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [customers, setCustomers] = useState<RetailCustomer[]>(INITIAL_CUSTOMERS);
-  const [orders, setOrders] = useState<B2COrder[]>(INITIAL_ORDERS);
+  const [orders, setOrders] = useState<B2COrder[]>([]);
   const [partners, setPartners] = useState<B2BPartner[]>(INITIAL_PARTNERS);
-  const [drops, setDrops] = useState<B2BDrop[]>(INITIAL_DROPS);
-  const [settlements, setSettlements] = useState<B2BSettlement[]>(() => 
-    INITIAL_SETTLEMENTS.map(s => ({
-      ...s,
-      pipelineStage: s.pipelineStage || s.stage || 'barang_baru_turun',
-      stage: s.stage || s.pipelineStage || 'barang_baru_turun'
-    }))
-  );
+  const [drops, setDrops] = useState<B2BDrop[]>([]);
+  const [settlements, setSettlements] = useState<B2BSettlement[]>([]);
   const [templates, setTemplates] = useState<WATemplate[]>(INITIAL_TEMPLATES);
   const [settings, setSettings] = useState<CRMSettings>(INITIAL_SETTINGS);
-  const [waLogs, setWaLogs] = useState<WALog[]>(INITIAL_WA_LOGS);
+  const [waLogs, setWaLogs] = useState<WALog[]>([]);
   const [supabaseStatus, setSupabaseStatus] = useState<'connected' | 'offline' | 'checking'>('offline');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
@@ -241,124 +235,149 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoggedIn(false);
 
       // Version lock to ensure fresh 0-omzet / clean transactions state while strictly keeping authentic Shaqueen Food products
-      const DATA_VERSION = 'v20261104_official_shaqueen_fresh_v6';
-      const currentVersion = localStorage.getItem('shaqueen_data_version');
-      const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
+      const DATA_VERSION = 'v20261104_official_shaqueen_permanent_zero_v9';
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
-      const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS) || localStorage.getItem('sq_orders');
       const storedPartners = localStorage.getItem(STORAGE_KEYS.PARTNERS) || localStorage.getItem('sq_partners');
-      const storedDrops = localStorage.getItem(STORAGE_KEYS.DROPS) || localStorage.getItem('sq_drops');
-      const storedSettlements = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
 
-      if (currentVersion !== DATA_VERSION || !storedProducts || !storedCustomers) {
-        // Upgrade / fresh seed: purge unwanted system products and keep strictly authentic Shaqueen Food products
-        const permanentCatalog = INITIAL_PRODUCTS;
-        setProducts(permanentCatalog);
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
-        localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
+      // 1. Transaction state MUST ALWAYS remain strictly and permanently empty [] on load and across reloads
+      setOrders([]);
+      setDrops([]);
+      setSettlements([]);
+      setWaLogs([]);
+      localStorage.setItem(STORAGE_KEYS.ORDERS, '[]');
+      localStorage.setItem('sq_orders', '[]');
+      localStorage.setItem(STORAGE_KEYS.DROPS, '[]');
+      localStorage.setItem('sq_drops', '[]');
+      localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, '[]');
+      localStorage.setItem('sq_settlements', '[]');
+      localStorage.setItem(STORAGE_KEYS.WA_LOGS, '[]');
+      localStorage.setItem('sq_wa_logs', '[]');
+      sessionStorage.removeItem(STORAGE_KEYS.ORDERS);
+      sessionStorage.removeItem('sq_orders');
+      sessionStorage.removeItem(STORAGE_KEYS.SETTLEMENTS);
+      sessionStorage.removeItem('sq_settlements');
+      sessionStorage.removeItem(STORAGE_KEYS.DROPS);
+      sessionStorage.removeItem('sq_drops');
+      sessionStorage.removeItem(STORAGE_KEYS.WA_LOGS);
+      sessionStorage.removeItem('sq_wa_logs');
+      localStorage.removeItem('orders');
+      localStorage.removeItem('settlements');
+      localStorage.removeItem('drops');
+      localStorage.removeItem('wa_logs');
+      localStorage.removeItem('sq_transactions');
+      localStorage.removeItem('transactions');
+      localStorage.removeItem('shaqueen_orders');
+      localStorage.setItem('shaqueen_data_version', DATA_VERSION);
 
-        // Customers: merge INITIAL_CUSTOMERS with any custom customers, reset transaction totals to 0
-        let customUserCustomers: RetailCustomer[] = [];
-        if (storedCustomers) {
-          try {
-            const parsed: RetailCustomer[] = JSON.parse(storedCustomers);
-            if (Array.isArray(parsed)) {
-              customUserCustomers = parsed.filter(c => !INITIAL_CUSTOMERS.some(ic => ic.id === c.id || ic.phone === c.phone));
-            }
-          } catch {}
-        }
-        const permanentCustomers = [...INITIAL_CUSTOMERS, ...customUserCustomers].map(c => ({
-          ...c,
-          totalOrders: 0,
-          totalSpent: 0,
-          lastOrderDate: ''
-        }));
-        setCustomers(permanentCustomers);
-        localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(permanentCustomers));
-        localStorage.setItem('sq_customers', JSON.stringify(permanentCustomers));
+      // 2. Products: strictly enforce authentic Shaqueen Food catalog (Cuanki Instan Super Pedas, Moring Varian Pedas, Keripik Moring Original)
+      const permanentCatalog = INITIAL_PRODUCTS;
+      setProducts(permanentCatalog);
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
+      localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
 
-        // Orders: Reset all transaction history to empty []
-        setOrders([]);
-        localStorage.setItem(STORAGE_KEYS.ORDERS, '[]');
-        localStorage.setItem('sq_orders', '[]');
-
-        // Partners: merge partners and reset transaction metrics to 0
-        let customUserPartners: B2BPartner[] = [];
-        if (storedPartners) {
-          try {
-            const parsed: B2BPartner[] = JSON.parse(storedPartners);
-            if (Array.isArray(parsed)) {
-              customUserPartners = parsed.filter(p => !INITIAL_PARTNERS.some(ip => ip.id === p.id));
-            }
-          } catch {}
-        }
-        const permanentPartners = [...INITIAL_PARTNERS, ...customUserPartners].map(p => ({
-          ...p,
-          totalPurchasedCartons: 0,
-          totalSettledAmount: 0
-        }));
-        setPartners(permanentPartners);
-        localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(permanentPartners));
-        localStorage.setItem('sq_partners', JSON.stringify(permanentPartners));
-
-        // Drops: Reset to empty []
-        setDrops([]);
-        localStorage.setItem(STORAGE_KEYS.DROPS, '[]');
-        localStorage.setItem('sq_drops', '[]');
-
-        // Settlements: Reset all B2B wholesale transactions to empty []
-        setSettlements([]);
-        localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, '[]');
-        localStorage.setItem('sq_settlements', '[]');
-
-        // WhatsApp Logs: Reset to empty []
-        setWaLogs([]);
-        localStorage.setItem(STORAGE_KEYS.WA_LOGS, '[]');
-        localStorage.setItem('sq_wa_logs', '[]');
-
-        localStorage.setItem('shaqueen_data_version', DATA_VERSION);
-      } else {
+      // 3. Customers: preserve contact directories intact, but strictly keep transaction counters at 0
+      let customUserCustomers: RetailCustomer[] = [];
+      if (storedCustomers) {
         try {
-          const parsed: Product[] = JSON.parse(storedProducts);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            // Keep only authentic products matching INITIAL_PRODUCTS
-            const valid = parsed.filter(p => INITIAL_PRODUCTS.some(ip => ip.id === p.id || ip.sku === p.sku));
-            const enriched = (valid.length > 0 ? valid : INITIAL_PRODUCTS).map(p => {
-              const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku);
-              const img = p.image_url || p.imageUrl || defaultProd?.imageUrl || defaultProd?.image_url;
-              return {
-                ...p,
-                imageUrl: img,
-                image_url: img,
-                hpp: p.hpp !== undefined ? Number(p.hpp) : (defaultProd?.hpp || 9000),
-                b2bUnit: ((p.b2bUnit || '').trim() || defaultProd?.b2bUnit || 'Karton'),
-                b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (defaultProd?.b2bConversion || 12)),
-              };
-            });
-            const existingIds = new Set(enriched.map(p => p.id));
-            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id));
-            const finalProducts = [...enriched, ...missingDefaults];
-            setProducts(finalProducts);
-          } else {
-            setProducts(INITIAL_PRODUCTS);
-            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
+          const parsed: RetailCustomer[] = JSON.parse(storedCustomers);
+          if (Array.isArray(parsed)) {
+            customUserCustomers = parsed.filter(c => !INITIAL_CUSTOMERS.some(ic => ic.id === c.id || ic.phone === c.phone));
           }
+        } catch {}
+      }
+      const permanentCustomers = [...INITIAL_CUSTOMERS, ...customUserCustomers].map(c => ({
+        ...c,
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrderDate: '',
+        tag: 'Pelanggan Baru' as CustomerTag
+      }));
+      setCustomers(permanentCustomers);
+      localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(permanentCustomers));
+      localStorage.setItem('sq_customers', JSON.stringify(permanentCustomers));
+
+      // 4. Partners: preserve contact directories intact, but strictly keep transaction counters at 0
+      let customUserPartners: B2BPartner[] = [];
+      if (storedPartners) {
+        try {
+          const parsed: B2BPartner[] = JSON.parse(storedPartners);
+          if (Array.isArray(parsed)) {
+            customUserPartners = parsed.filter(p => !INITIAL_PARTNERS.some(ip => ip.id === p.id));
+          }
+        } catch {}
+      }
+      const permanentPartners = [...INITIAL_PARTNERS, ...customUserPartners].map(p => ({
+        ...p,
+        totalPurchasedCartons: 0,
+        totalSettledAmount: 0
+      }));
+      setPartners(permanentPartners);
+      localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(permanentPartners));
+      localStorage.setItem('sq_partners', JSON.stringify(permanentPartners));
+
+      // 5. WhatsApp Templates
+      const storedTemplates = localStorage.getItem(STORAGE_KEYS.TEMPLATES) || localStorage.getItem('sq_templates');
+      if (storedTemplates) {
+        try {
+          const parsed: WATemplate[] = JSON.parse(storedTemplates);
+          const merged = [...parsed];
+          for (const initTpl of INITIAL_TEMPLATES) {
+            if (!merged.some(t => t.id === initTpl.id)) {
+              merged.push(initTpl);
+            }
+          }
+          setTemplates(merged);
         } catch {
-          setProducts(INITIAL_PRODUCTS);
+          setTemplates(INITIAL_TEMPLATES);
         }
+      } else {
+        setTemplates(INITIAL_TEMPLATES);
+        localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(INITIAL_TEMPLATES));
+        localStorage.setItem('sq_templates', JSON.stringify(INITIAL_TEMPLATES));
+      }
 
-        if (storedCustomers) {
-          try {
-            setCustomers(JSON.parse(storedCustomers));
-          } catch {
-            setCustomers(INITIAL_CUSTOMERS);
+      // 6. Settings
+      const storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      if (storedSettings) {
+        try {
+          const parsed = JSON.parse(storedSettings);
+          setSettings(parsed);
+          if (parsed.supabaseUrl && parsed.supabaseAnonKey) {
+            setSupabaseStatus('connected');
           }
-        }
+        } catch {}
+      }
+    } catch (e) {
+      console.error('Error loading CRM data from storage:', e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
 
-        if (storedOrders) {
-          try {
-            const parsed = JSON.parse(storedOrders);
-            const normalized = (parsed || []).map((o: any) => ({
+  // Cross-tab sync via standard window 'storage' event (only triggers when another tab modifies localStorage)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.key) return;
+      try {
+        if (e.key === STORAGE_KEYS.CUSTOMERS || e.key === 'sq_customers') {
+          const val = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
+          if (val) {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              setCustomers(parsed.map((c: any) => ({
+                ...c,
+                totalOrders: 0,
+                totalSpent: 0,
+                lastOrderDate: '',
+                tag: (c.tag || 'Pelanggan Baru') as CustomerTag
+              })));
+            }
+          }
+        } else if (e.key === STORAGE_KEYS.ORDERS || e.key === 'sq_orders') {
+          const val = localStorage.getItem(STORAGE_KEYS.ORDERS) || localStorage.getItem('sq_orders');
+          if (val) {
+            const parsed = JSON.parse(val);
+            setOrders((parsed || []).map((o: any) => ({
               ...o,
               pipelineStage: o.pipelineStage || o.stage || 'diproses',
               stage: o.stage || o.pipelineStage || 'diproses',
@@ -368,30 +387,27 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               total: o.total !== undefined ? o.total : (o.totalAmount || 0),
               trackingNumber: o.trackingNumber || o.resi || '',
               resi: o.resi || o.trackingNumber || '',
-            }));
-            setOrders(normalized);
-          } catch {
-            setOrders(INITIAL_ORDERS);
+            })));
           }
-        }
-
-        if (storedPartners) {
-          try {
-            setPartners(JSON.parse(storedPartners));
-          } catch {
-            setPartners(INITIAL_PARTNERS);
+        } else if (e.key === STORAGE_KEYS.PARTNERS || e.key === 'sq_partners') {
+          const val = localStorage.getItem(STORAGE_KEYS.PARTNERS) || localStorage.getItem('sq_partners');
+          if (val) {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              setPartners(parsed.map((p: any) => ({
+                ...p,
+                totalPurchasedCartons: 0,
+                totalSettledAmount: 0
+              })));
+            }
           }
-        }
-
-        if (storedDrops) {
-          try {
-            setDrops(JSON.parse(storedDrops));
-          } catch {}
-        }
-
-        if (storedSettlements) {
-          try {
-            const parsed = JSON.parse(storedSettlements);
+        } else if (e.key === STORAGE_KEYS.DROPS || e.key === 'sq_drops') {
+          const val = localStorage.getItem(STORAGE_KEYS.DROPS) || localStorage.getItem('sq_drops');
+          if (val) setDrops(JSON.parse(val));
+        } else if (e.key === STORAGE_KEYS.SETTLEMENTS || e.key === 'sq_settlements') {
+          const val = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
+          if (val) {
+            const parsed = JSON.parse(val);
             const validStages: B2BPipelineStage[] = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
             setSettlements(parsed.map((s: any) => {
               const stage = (s.pipelineStage && validStages.includes(s.pipelineStage))
@@ -405,108 +421,26 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 stage: stage,
               };
             }));
-          } catch {
-            setSettlements(INITIAL_SETTLEMENTS);
           }
+        } else if (e.key === STORAGE_KEYS.PRODUCTS || e.key === 'sq_products') {
+          const val = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
+          if (val) setProducts(JSON.parse(val));
+        } else if (e.key === STORAGE_KEYS.WA_LOGS || e.key === 'sq_wa_logs') {
+          const val = localStorage.getItem(STORAGE_KEYS.WA_LOGS) || localStorage.getItem('sq_wa_logs');
+          if (val) setWaLogs(JSON.parse(val));
         }
-      }
-
-      const storedTemplates = localStorage.getItem(STORAGE_KEYS.TEMPLATES) || localStorage.getItem('sq_templates');
-      if (storedTemplates) {
-        const parsed: WATemplate[] = JSON.parse(storedTemplates);
-        const merged = [...parsed];
-        for (const initTpl of INITIAL_TEMPLATES) {
-          if (!merged.some(t => t.id === initTpl.id)) {
-            merged.push(initTpl);
-          }
-        }
-        setTemplates(merged);
-      }
-
-      const storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      if (storedSettings) {
-        const parsed = JSON.parse(storedSettings);
-        setSettings(parsed);
-        if (parsed.supabaseUrl && parsed.supabaseAnonKey) {
-          setSupabaseStatus('connected');
-        }
-      }
-
-      const storedLogs = localStorage.getItem(STORAGE_KEYS.WA_LOGS);
-      if (storedLogs) setWaLogs(JSON.parse(storedLogs));
-    } catch (e) {
-      console.error('Error loading CRM data from storage:', e);
-    } finally {
-      setIsLoaded(true);
-    }
-  }, []);
-
-  // Global Auto-Refresh Event Listener (Reactivity across tabs & views)
-  useEffect(() => {
-    const handleDataChanged = () => {
-      try {
-        const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
-        if (storedCustomers) setCustomers(JSON.parse(storedCustomers));
-
-        const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS) || localStorage.getItem('sq_orders');
-        if (storedOrders) {
-          const parsed = JSON.parse(storedOrders);
-          setOrders((parsed || []).map((o: any) => ({
-            ...o,
-            pipelineStage: o.pipelineStage || o.stage || 'diproses',
-            stage: o.stage || o.pipelineStage || 'diproses',
-            customerPhone: o.customerPhone || o.phone || '',
-            phone: o.phone || o.customerPhone || '',
-            totalAmount: o.totalAmount !== undefined ? o.totalAmount : (o.total || 0),
-            total: o.total !== undefined ? o.total : (o.totalAmount || 0),
-            trackingNumber: o.trackingNumber || o.resi || '',
-            resi: o.resi || o.trackingNumber || '',
-          })));
-        }
-
-        const storedPartners = localStorage.getItem(STORAGE_KEYS.PARTNERS) || localStorage.getItem('sq_partners');
-        if (storedPartners) setPartners(JSON.parse(storedPartners));
-
-        const storedDrops = localStorage.getItem(STORAGE_KEYS.DROPS) || localStorage.getItem('sq_drops');
-        if (storedDrops) setDrops(JSON.parse(storedDrops));
-
-        const storedSettlements = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
-        if (storedSettlements) {
-          const parsed = JSON.parse(storedSettlements);
-          const validStages: B2BPipelineStage[] = ['barang_baru_turun', 'h_plus_7', 'h_plus_14'];
-          setSettlements(parsed.map((s: any) => {
-            const stage = (s.pipelineStage && validStages.includes(s.pipelineStage))
-              ? s.pipelineStage
-              : (s.stage && validStages.includes(s.stage))
-                ? s.stage
-                : 'barang_baru_turun';
-            return {
-              ...s,
-              pipelineStage: stage,
-              stage: stage,
-            };
-          }));
-        }
-
-        const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
-        if (storedProducts) setProducts(JSON.parse(storedProducts));
-
-        const storedWaLogs = localStorage.getItem(STORAGE_KEYS.WA_LOGS) || localStorage.getItem('sq_wa_logs');
-        if (storedWaLogs) setWaLogs(JSON.parse(storedWaLogs));
-      } catch (e) {
-        console.error('Error handling reactive data change:', e);
+      } catch (err) {
+        console.error('Error handling cross-tab storage sync:', err);
       }
     };
 
-    window.addEventListener('shaqueen-data-changed', handleDataChanged);
-    window.addEventListener('storage', handleDataChanged);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      window.removeEventListener('shaqueen-data-changed', handleDataChanged);
-      window.removeEventListener('storage', handleDataChanged);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  // Save to LocalStorage whenever state changes
+  // Isolated localStorage persistence per state entity (Zero redundant serialization)
   useEffect(() => {
     if (!isLoaded) return;
     try {
@@ -524,25 +458,77 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sessionStorage.removeItem('sq_auth_session');
         sessionStorage.removeItem('sq_user');
       }
+    } catch (e) {}
+  }, [isLoggedIn, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
       localStorage.setItem('sq_products', JSON.stringify(products));
+    } catch (e) {}
+  }, [products, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
       localStorage.setItem('sq_customers', JSON.stringify(customers));
+    } catch (e) {}
+  }, [customers, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
       localStorage.setItem('sq_orders', JSON.stringify(orders));
+    } catch (e) {}
+  }, [orders, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(partners));
       localStorage.setItem('sq_partners', JSON.stringify(partners));
+    } catch (e) {}
+  }, [partners, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.DROPS, JSON.stringify(drops));
       localStorage.setItem('sq_drops', JSON.stringify(drops));
+    } catch (e) {}
+  }, [drops, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, JSON.stringify(settlements));
       localStorage.setItem('sq_settlements', JSON.stringify(settlements));
+    } catch (e) {}
+  }, [settlements, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
+    } catch (e) {}
+  }, [templates, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    } catch (e) {}
+  }, [settings, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
       localStorage.setItem(STORAGE_KEYS.WA_LOGS, JSON.stringify(waLogs));
-    } catch (e) {
-      console.error('Error saving CRM data to storage:', e);
-    }
-  }, [isLoggedIn, products, customers, orders, partners, drops, settlements, templates, settings, waLogs, isLoaded]);
+    } catch (e) {}
+  }, [waLogs, isLoaded]);
 
   // Auth Operations (Single-Tenant Exclusive Authentication)
   const login = (email: string, pass: string): boolean => {
@@ -1817,15 +1803,48 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetToDefaultData = () => {
     setProducts(INITIAL_PRODUCTS);
-    setCustomers(INITIAL_CUSTOMERS);
-    setOrders(INITIAL_ORDERS);
-    setPartners(INITIAL_PARTNERS);
-    setDrops(INITIAL_DROPS);
-    setSettlements(INITIAL_SETTLEMENTS);
+    setCustomers(INITIAL_CUSTOMERS.map(c => ({
+      ...c,
+      totalOrders: 0,
+      totalSpent: 0,
+      lastOrderDate: '',
+      tag: 'Pelanggan Baru' as CustomerTag
+    })));
+    setOrders([]);
+    setPartners(INITIAL_PARTNERS.map(p => ({
+      ...p,
+      totalPurchasedCartons: 0,
+      totalSettledAmount: 0
+    })));
+    setDrops([]);
+    setSettlements([]);
     setTemplates(INITIAL_TEMPLATES);
     setSettings(INITIAL_SETTINGS);
-    setWaLogs(INITIAL_WA_LOGS);
+    setWaLogs([]);
+    
+    // Clear storage and save clean defaults
     localStorage.clear();
+    localStorage.setItem('shaqueen_data_version', 'v20261104_official_shaqueen_permanent_zero_v9');
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
+    localStorage.setItem('sq_products', JSON.stringify(INITIAL_PRODUCTS));
+    const cleanCustomers = INITIAL_CUSTOMERS.map(c => ({ ...c, totalOrders: 0, totalSpent: 0, lastOrderDate: '' }));
+    localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(cleanCustomers));
+    localStorage.setItem('sq_customers', JSON.stringify(cleanCustomers));
+    localStorage.setItem(STORAGE_KEYS.ORDERS, '[]');
+    localStorage.setItem('sq_orders', '[]');
+    const cleanPartners = INITIAL_PARTNERS.map(p => ({ ...p, totalPurchasedCartons: 0, totalSettledAmount: 0 }));
+    localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(cleanPartners));
+    localStorage.setItem('sq_partners', JSON.stringify(cleanPartners));
+    localStorage.setItem(STORAGE_KEYS.DROPS, '[]');
+    localStorage.setItem('sq_drops', '[]');
+    localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, '[]');
+    localStorage.setItem('sq_settlements', '[]');
+    localStorage.setItem(STORAGE_KEYS.WA_LOGS, '[]');
+    localStorage.setItem('sq_wa_logs', '[]');
+    localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(INITIAL_TEMPLATES));
+    localStorage.setItem('sq_templates', JSON.stringify(INITIAL_TEMPLATES));
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
+
     setIsLoggedIn(true);
     localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
     localStorage.setItem('sq_logged_in', 'true');
@@ -1836,34 +1855,50 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     sessionStorage.setItem('sq_user', JSON.stringify(userObj));
   };
 
-  // Computed metrics
-  const totalB2COmzet = orders.reduce((sum, o) => sum + (o.totalAmount || (o as any).total || 0), 0);
-  const totalB2BOmzet = settlements.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
-  const totalOmzet = totalB2COmzet + totalB2BOmzet;
+  // Computed metrics (Memoized to prevent expensive reductions on every render)
+  const totalB2COmzet = useMemo(() => {
+    return orders.reduce((sum, o) => sum + (o.totalAmount || (o as any).total || 0), 0);
+  }, [orders]);
 
-  const calculateOrderProfit = (o: B2COrder): number => {
+  const totalB2BOmzet = useMemo(() => {
+    return settlements.reduce((sum, s) => sum + (s.totalCollectedAmount || (s as any).totalCollected || 0), 0);
+  }, [settlements]);
+
+  const totalOmzet = useMemo(() => totalB2COmzet + totalB2BOmzet, [totalB2COmzet, totalB2BOmzet]);
+
+  // Fast Product lookup map for O(1) calculations
+  const productMap = useMemo(() => {
+    const map = new Map<string, Product>();
+    for (const p of products) {
+      if (p.id) map.set(p.id, p);
+      if (p.name) map.set(p.name.toLowerCase().trim(), p);
+    }
+    return map;
+  }, [products]);
+
+  const calculateOrderProfit = useCallback((o: B2COrder): number => {
     if (o.grossProfit !== undefined) return o.grossProfit;
     if (o.items && o.items.length > 0) {
       return o.items.reduce((sum, it) => {
         const itemPcs = it.quantityInPcs !== undefined ? it.quantityInPcs : it.quantity;
-        const prod = products.find(p => p.id === it.productId);
+        const prod = productMap.get(it.productId) || products.find(p => p.id === it.productId);
         const itemHpp = it.hpp !== undefined ? it.hpp : (prod?.hpp || 0);
         const itemPrice = it.unitPrice !== undefined ? it.unitPrice : (prod?.b2cPrice || 0);
         return sum + ((itemPrice - itemHpp) * itemPcs);
       }, 0);
     }
-    const prod = products.find(p => p.id === o.productId || (o.productName && p.name && p.name.toLowerCase() === o.productName.toLowerCase()));
+    const prod = productMap.get(o.productId || '') || (o.productName ? productMap.get(o.productName.toLowerCase().trim()) : undefined);
     const hpp = o.hpp !== undefined ? o.hpp : (prod?.hpp || 0);
     const pcs = o.quantityInPcs !== undefined ? o.quantityInPcs : o.quantity;
     const price = o.unitPrice !== undefined ? o.unitPrice : (((o.totalAmount || (o as any).total || 0)) / (pcs || 1));
     return (price - hpp) * pcs;
-  };
+  }, [productMap, products]);
 
-  const calculateSettlementProfit = (s: B2BSettlement): number => {
+  const calculateSettlementProfit = useCallback((s: B2BSettlement): number => {
     if (s.grossProfit !== undefined) return s.grossProfit;
     if (s.items && s.items.length > 0) {
       return s.items.reduce((sum, it) => {
-        const prod = products.find(p => p.id === it.productId || (it.productName && p.name && p.name.toLowerCase() === it.productName.toLowerCase()));
+        const prod = productMap.get(it.productId) || (it.productName ? productMap.get(it.productName.toLowerCase().trim()) : undefined);
         const hpp = it.hpp !== undefined ? it.hpp : (prod?.hpp || 0);
         const conv = it.b2bConversion || prod?.b2bConversion || 12;
         const pcs = it.quantityInPcs !== undefined ? it.quantityInPcs : (it.quantity * conv);
@@ -1871,17 +1906,23 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return sum + ((unitPrice - hpp) * pcs);
       }, 0);
     }
-    const prod = products.find(p => p.id === s.productId || (s.productName && p.name && p.name.toLowerCase() === s.productName.toLowerCase()));
+    const prod = productMap.get(s.productId || '') || (s.productName ? productMap.get(s.productName.toLowerCase().trim()) : undefined);
     const hpp = s.hpp !== undefined ? s.hpp : (prod?.hpp || 0);
     const conv = s.b2bConversion || prod?.b2bConversion || 12;
     const pcs = s.quantitySoldPcs !== undefined ? s.quantitySoldPcs : ((s.quantitySold || (s as any).qty || 1) * conv);
     const b2bUnitPrice = prod?.b2bPrice || (((s.totalCollectedAmount || (s as any).totalCollected || 0)) / (pcs || 1));
     return (b2bUnitPrice - hpp) * pcs;
-  };
+  }, [productMap]);
 
-  const totalB2CGrossProfit = orders.reduce((sum, o) => sum + calculateOrderProfit(o), 0);
-  const totalB2BGrossProfit = settlements.reduce((sum, s) => sum + calculateSettlementProfit(s), 0);
-  const totalGrossProfit = totalB2CGrossProfit + totalB2BGrossProfit;
+  const totalB2CGrossProfit = useMemo(() => {
+    return orders.reduce((sum, o) => sum + calculateOrderProfit(o), 0);
+  }, [orders, calculateOrderProfit]);
+
+  const totalB2BGrossProfit = useMemo(() => {
+    return settlements.reduce((sum, s) => sum + calculateSettlementProfit(s), 0);
+  }, [settlements, calculateSettlementProfit]);
+
+  const totalGrossProfit = useMemo(() => totalB2CGrossProfit + totalB2BGrossProfit, [totalB2CGrossProfit, totalB2BGrossProfit]);
 
   // Filtered metrics by selectedMonth
   const {
@@ -1935,100 +1976,163 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const displayB2BOmzet = displayedB2BRevenue;
   const displayGrossProfitMargin = displayedGrossProfitMargin;
 
-  const dueFollowUpsCount = orders.filter(o => {
-    const stage = o.pipelineStage || (o as any).stage;
-    const isDue = stage === 'h_plus_2' || stage === 'h_plus_30';
-    if (!isDue) return false;
-    const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
-    return customers.some(c => 
-      (o.customerId && c.id === o.customerId) ||
-      (cleanOPhone && cleanPhoneNumber(c.phone) === cleanOPhone) ||
-      (o.customerName && c.name && c.name.toLowerCase().trim() === o.customerName.toLowerCase().trim())
-    );
-  }).length;
+  // Ultra-fast due follow-up count with O(1) Set lookups
+  const dueFollowUpsCount = useMemo(() => {
+    const custIdSet = new Set<string>();
+    const custPhoneSet = new Set<string>();
+    const custNameSet = new Set<string>();
 
-  const activePartnersCount = partners.filter(p => p.status === 'aktif').length;
-  const lowStockCount = products.filter(p => p.stock < 25 || p.status === 'habis').length;
+    for (const c of customers) {
+      if (c.id) custIdSet.add(c.id);
+      const cleanP = cleanPhoneNumber(c.phone);
+      if (cleanP) custPhoneSet.add(cleanP);
+      if (c.name) custNameSet.add(c.name.toLowerCase().trim());
+    }
+
+    let count = 0;
+    for (const o of orders) {
+      const stage = o.pipelineStage || (o as any).stage;
+      if (stage !== 'h_plus_2' && stage !== 'h_plus_30') continue;
+      const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
+      const cleanOName = (o.customerName || (o as any).name || '').toLowerCase().trim();
+      const hasValidCust =
+        (o.customerId && custIdSet.has(o.customerId)) ||
+        (cleanOPhone && custPhoneSet.has(cleanOPhone)) ||
+        (cleanOName && custNameSet.has(cleanOName));
+      if (hasValidCust) {
+        count++;
+      }
+    }
+    return count;
+  }, [orders, customers]);
+
+  const activePartnersCount = useMemo(() => {
+    return partners.filter(p => p.status === 'aktif').length;
+  }, [partners]);
+
+  const lowStockCount = useMemo(() => {
+    return products.filter(p => p.stock < 25 || p.status === 'habis').length;
+  }, [products]);
+
+  const contextValue: CRMContextType = useMemo(() => ({
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    isLoaded,
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    isLoggedIn,
+    setIsLoggedIn,
+    login,
+    logout,
+    products,
+    customers,
+    orders,
+    partners,
+    drops,
+    settlements,
+    templates,
+    settings,
+    waLogs,
+    supabaseStatus,
+    testSupabaseConnection,
+    totalB2COmzet,
+    totalB2BOmzet,
+    totalOmzet,
+    totalB2CGrossProfit,
+    totalB2BGrossProfit,
+    totalGrossProfit,
+    selectedMonth,
+    setSelectedMonth,
+    filteredOrders,
+    filteredSettlements,
+    displayedTotalRevenue,
+    displayedTotalGrossProfit,
+    displayedB2CRevenue,
+    displayedB2BRevenue,
+    displayedGrossProfitMargin,
+    displayTotalOmzet,
+    displayGrossProfit,
+    displayB2COmzet,
+    displayB2BOmzet,
+    displayGrossProfitMargin,
+    calculateOrderProfit,
+    calculateSettlementProfit,
+    dueFollowUpsCount,
+    activePartnersCount,
+    lowStockCount,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    toggleProductStatus,
+    adjustProductStock,
+    addCustomer,
+    updateCustomer,
+    deleteCustomer,
+    addB2COrder,
+    updateOrderStatus,
+    updatePipelineStage,
+    deleteOrder,
+    addPartner,
+    updatePartner,
+    deletePartner,
+    addDrop,
+    deleteDrop,
+    addSettlement,
+    deleteSettlement,
+    updateB2BPipelineStage,
+    updateTemplate,
+    triggerWhatsAppMessage,
+    clearWALogs,
+    updateSettings,
+    exportDataJSON,
+    importDataJSON,
+    resetToDefaultData,
+  }), [
+    activeTab,
+    searchQuery,
+    isLoaded,
+    isMobileMenuOpen,
+    isLoggedIn,
+    products,
+    customers,
+    orders,
+    partners,
+    drops,
+    settlements,
+    templates,
+    settings,
+    waLogs,
+    supabaseStatus,
+    totalB2COmzet,
+    totalB2BOmzet,
+    totalOmzet,
+    totalB2CGrossProfit,
+    totalB2BGrossProfit,
+    totalGrossProfit,
+    selectedMonth,
+    filteredOrders,
+    filteredSettlements,
+    displayedTotalRevenue,
+    displayedTotalGrossProfit,
+    displayedB2CRevenue,
+    displayedB2BRevenue,
+    displayedGrossProfitMargin,
+    displayTotalOmzet,
+    displayGrossProfit,
+    displayB2COmzet,
+    displayB2BOmzet,
+    displayGrossProfitMargin,
+    calculateOrderProfit,
+    calculateSettlementProfit,
+    dueFollowUpsCount,
+    activePartnersCount,
+    lowStockCount,
+  ]);
 
   return (
-    <CRMContext.Provider
-      value={{
-        activeTab,
-        setActiveTab,
-        searchQuery,
-        setSearchQuery,
-        isLoaded,
-        isMobileMenuOpen,
-        setIsMobileMenuOpen,
-        isLoggedIn,
-        setIsLoggedIn,
-        login,
-        logout,
-        products,
-        customers,
-        orders,
-        partners,
-        drops,
-        settlements,
-        templates,
-        settings,
-        waLogs,
-        supabaseStatus,
-        testSupabaseConnection,
-        totalB2COmzet,
-        totalB2BOmzet,
-        totalOmzet,
-        totalB2CGrossProfit,
-        totalB2BGrossProfit,
-        totalGrossProfit,
-        selectedMonth,
-        setSelectedMonth,
-        filteredOrders,
-        filteredSettlements,
-        displayedTotalRevenue,
-        displayedTotalGrossProfit,
-        displayedB2CRevenue,
-        displayedB2BRevenue,
-        displayedGrossProfitMargin,
-        displayTotalOmzet,
-        displayGrossProfit,
-        displayB2COmzet,
-        displayB2BOmzet,
-        displayGrossProfitMargin,
-        calculateOrderProfit,
-        calculateSettlementProfit,
-        dueFollowUpsCount,
-        activePartnersCount,
-        lowStockCount,
-        addProduct,
-        updateProduct,
-        deleteProduct,
-        toggleProductStatus,
-        adjustProductStock,
-        addCustomer,
-        updateCustomer,
-        deleteCustomer,
-        addB2COrder,
-        updateOrderStatus,
-        updatePipelineStage,
-        deleteOrder,
-        addPartner,
-        updatePartner,
-        deletePartner,
-        addDrop,
-        deleteDrop,
-        addSettlement,
-        deleteSettlement,
-        updateB2BPipelineStage,
-        updateTemplate,
-        triggerWhatsAppMessage,
-        clearWALogs,
-        updateSettings,
-        exportDataJSON,
-        importDataJSON,
-        resetToDefaultData,
-      }}
-    >
+    <CRMContext.Provider value={contextValue}>
       {children}
     </CRMContext.Provider>
   );

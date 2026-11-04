@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { KanbanCard } from './KanbanCard';
 import { B2COrder, PipelineStage, OrderPlatform } from '@/lib/types';
@@ -35,26 +35,42 @@ export const KanbanBoardView: React.FC<KanbanBoardViewProps> = ({
   const [activeViewTab, setActiveViewTab] = useState<'board' | 'logs'>('board');
   const [dragOverCol, setDragOverCol] = useState<PipelineStage | null>(null);
 
-  const filteredOrders = orders.filter((o) => {
-    // Only display orders whose customer actively exists in customers database
-    const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
-    const hasValidCust = customers.some(c => 
-      (o.customerId && c.id === o.customerId) ||
-      (cleanOPhone && cleanPhoneNumber(c.phone) === cleanOPhone) ||
-      (o.customerName && c.name && c.name.toLowerCase().trim() === o.customerName.toLowerCase().trim())
-    );
-    if (!hasValidCust) return false;
+  const filteredOrders = useMemo(() => {
+    const custIdSet = new Set<string>();
+    const custPhoneSet = new Set<string>();
+    const custNameSet = new Set<string>();
 
-    const matchesSearch =
-      (o.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (o.productName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ((o.orderNumber || (o as any).id || '')).toLowerCase().includes(searchQuery.toLowerCase());
+    for (const c of customers) {
+      if (c.id) custIdSet.add(c.id);
+      const cleanP = cleanPhoneNumber(c.phone);
+      if (cleanP) custPhoneSet.add(cleanP);
+      if (c.name) custNameSet.add(c.name.toLowerCase().trim());
+    }
 
-    const matchesPlatform =
-      selectedPlatform === 'all' || o.platform === selectedPlatform;
+    const q = searchQuery.toLowerCase().trim();
 
-    return matchesSearch && matchesPlatform;
-  });
+    return orders.filter((o) => {
+      // Only display orders whose customer actively exists in customers database
+      const cleanOPhone = cleanPhoneNumber(o.customerPhone || (o as any).phone);
+      const cleanOName = (o.customerName || (o as any).name || '').toLowerCase().trim();
+      const hasValidCust =
+        (o.customerId && custIdSet.has(o.customerId)) ||
+        (cleanOPhone && custPhoneSet.has(cleanOPhone)) ||
+        (cleanOName && custNameSet.has(cleanOName));
+      if (!hasValidCust) return false;
+
+      const matchesSearch =
+        !q ||
+        (o.customerName || '').toLowerCase().includes(q) ||
+        (o.productName || '').toLowerCase().includes(q) ||
+        ((o.orderNumber || (o as any).id || '')).toLowerCase().includes(q);
+
+      const matchesPlatform =
+        selectedPlatform === 'all' || o.platform === selectedPlatform;
+
+      return matchesSearch && matchesPlatform;
+    });
+  }, [orders, customers, searchQuery, selectedPlatform]);
 
   const columns: {
     id: PipelineStage;

@@ -53,21 +53,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     displayGrossProfitMargin
   } = useCRM();
 
-  // Automatically detect all available months from transactions + last 6-12 months
+  // Automatically detect all available months from transactions + last 6-12 months (Single-pass O(N+M))
   const monthOptions = useMemo(() => {
     const monthsSet = new Set<string>();
+    const orderCountMap = new Map<string, number>();
+    const stlCountMap = new Map<string, number>();
 
-    // 1. Gather all months from orders
-    orders.forEach(o => {
+    // 1. Gather all months from orders in single pass
+    for (const o of orders) {
       const m = getTransactionMonth(o);
-      if (m) monthsSet.add(m);
-    });
+      if (m) {
+        monthsSet.add(m);
+        orderCountMap.set(m, (orderCountMap.get(m) || 0) + 1);
+      }
+    }
 
-    // 2. Gather all months from settlements
-    settlements.forEach(s => {
+    // 2. Gather all months from settlements in single pass
+    for (const s of settlements) {
       const m = getTransactionMonth(s);
-      if (m) monthsSet.add(m);
-    });
+      if (m) {
+        monthsSet.add(m);
+        stlCountMap.set(m, (stlCountMap.get(m) || 0) + 1);
+      }
+    }
 
     // 3. Ensure sequence covering last 12 months up to late 2026
     const baseYear = 2026;
@@ -82,8 +90,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const sortedMonths = Array.from(monthsSet).sort().reverse();
 
     return sortedMonths.map(mKey => {
-      const orderCount = orders.filter(o => getTransactionMonth(o) === mKey).length;
-      const stlCount = settlements.filter(s => getTransactionMonth(s) === mKey).length;
+      const orderCount = orderCountMap.get(mKey) || 0;
+      const stlCount = stlCountMap.get(mKey) || 0;
       return {
         key: mKey,
         label: formatMonthName(mKey),

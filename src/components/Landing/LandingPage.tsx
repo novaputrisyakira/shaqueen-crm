@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -28,9 +28,11 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
   const { products } = useCRM();
-  const displayProducts: Product[] = (products && products.length > 0)
-    ? products
-    : (defaultProductsData as Product[]);
+  const displayProducts: Product[] = useMemo(() => {
+    return (products && products.length > 0)
+      ? products
+      : (defaultProductsData as Product[]);
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-[#F4F1DE] text-[#2B1E16] font-sans selection:bg-[#E85D04] selection:text-white relative overflow-hidden">
@@ -61,6 +63,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
               <img 
                 src="/shaqueen-logo.png" 
                 alt="Shaqueen Food" 
+                width={48}
+                height={48}
+                loading="eager"
+                decoding="async"
                 className="w-full h-full object-contain" 
                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/80x80/E85D04/FFFFFF?text=SF'; }} 
               />
@@ -199,6 +205,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
                           <img 
                             src={pImg} 
                             alt={p.name}
+                            width={56}
+                            height={56}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover" 
                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100/E85D04/FFFFFF?text=SQ'; }}
                           />
@@ -376,6 +386,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin }) => {
                     <img
                       src={pImg}
                       alt={p.name}
+                      width={380}
+                      height={176}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                       onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x200/E85D04/FFFFFF?text=Shaqueen'; }}
                     />
