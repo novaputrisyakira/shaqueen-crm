@@ -7,9 +7,9 @@
     "city": "Bandung",
     "address": "Jl. Buah Batu No. 88, Bandung",
     "notes": "Pelanggan baru dari TikTok Shop, order Moring + Cuanki.",
-    "totalOrders": 1,
-    "totalSpent": 45000,
-    "lastOrderDate": "2026-11-03",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
     "tag": "Pelanggan Baru"
   },
   {
@@ -20,10 +20,10 @@
     "city": "Bandung",
     "address": "Jl. Dago No. 12, Coblong, Bandung",
     "notes": "Pelanggan setia WhatsApp repeat order rutin cuanki pedas.",
-    "totalOrders": 4,
-    "totalSpent": 144000,
-    "lastOrderDate": "2026-11-01",
-    "tag": "Pelanggan Loyal"
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
+    "tag": "Pelanggan Baru"
   },
   {
     "id": "c2",
@@ -33,9 +33,9 @@
     "city": "Jakarta Selatan",
     "address": "Jl. Tebet Barat Dalam No. 18, Jakarta Selatan",
     "notes": "Order lewat live flash sale Shopee paket bundling.",
-    "totalOrders": 2,
-    "totalSpent": 64000,
-    "lastOrderDate": "2026-10-31",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
     "tag": "Pelanggan Baru"
   },
   {
@@ -46,10 +46,10 @@
     "city": "Surabaya",
     "address": "Komp. Rungkut Asri Timur No. 8, Surabaya",
     "notes": "Tertarik konten video review cuanki kuah pedas nampol.",
-    "totalOrders": 5,
-    "totalSpent": 185000,
-    "lastOrderDate": "2026-10-02",
-    "tag": "Pelanggan Loyal"
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
+    "tag": "Pelanggan Baru"
   },
   {
     "id": "c4",
@@ -59,9 +59,9 @@
     "city": "Yogyakarta",
     "address": "Jl. Kaliurang KM 5 No. 20, Sleman, DIY",
     "notes": "Suka Cuanki Instan Super Pedas kuah rawit merah.",
-    "totalOrders": 1,
-    "totalSpent": 36000,
-    "lastOrderDate": "2026-11-02",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
     "tag": "Pelanggan Baru"
   },
   {
@@ -72,10 +72,10 @@
     "city": "Semarang",
     "address": "Jl. Pandanaran No. 70, Semarang",
     "notes": "Follow up review H+15 dan promo gajian.",
-    "totalOrders": 3,
-    "totalSpent": 96000,
-    "lastOrderDate": "2026-10-15",
-    "tag": "At-Risk (Jarang Beli)"
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
+    "tag": "Pelanggan Baru"
   },
   {
     "id": "cust-1",
@@ -85,10 +85,10 @@
     "city": "Bandung",
     "address": "Jl. Tubagus Ismail No. 42, Coblong, Bandung",
     "notes": "Suka cuanki super pedas, repeat buyer rutin.",
-    "totalOrders": 4,
-    "totalSpent": 126000,
-    "lastOrderDate": "2026-11-01",
-    "tag": "Pelanggan Loyal"
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
+    "tag": "Pelanggan Baru"
   },
   {
     "id": "cust-2",
@@ -98,9 +98,9 @@
     "city": "Jakarta Selatan",
     "address": "Jl. Tebet Barat Raya No. 15, Jakarta Selatan",
     "notes": "Order lewat live flash sale.",
-    "totalOrders": 1,
-    "totalSpent": 54000,
-    "lastOrderDate": "2026-10-31",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
     "tag": "Pelanggan Baru"
   },
   {
@@ -111,10 +111,10 @@
     "city": "Depok",
     "address": "Jl. Margonda Raya No. 120, Beji, Depok",
     "notes": "Pelanggan konsinyasi dan reseller pouch cuanki.",
-    "totalOrders": 6,
-    "totalSpent": 210000,
-    "lastOrderDate": "2026-10-28",
-    "tag": "Pelanggan Loyal"
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
+    "tag": "Pelanggan Baru"
   },
   {
     "id": "cust-6",
@@ -124,9 +124,9 @@
     "city": "Bekasi",
     "address": "Pondok Ungu Permai Blok C No. 14, Bekasi",
     "notes": "Pembelian grosir moring pedas dan pilus cikur.",
-    "totalOrders": 2,
-    "totalSpent": 75000,
-    "lastOrderDate": "2026-10-25",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "",
     "tag": "Pelanggan Baru"
   }
 ]

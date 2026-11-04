@@ -77,14 +77,4 @@ export const INITIAL_SETTINGS: CRMSettings = {
   supabaseAnonKey: ''
 };
 
-export const INITIAL_WA_LOGS: WALog[] = [
-  {
-    id: 'log-1',
-    customerName: 'Clarissa Putri',
-    customerPhone: '6281287654321',
-    stage: 'Follow-up H+2',
-    messageText: 'Halo Kak Clarissa Putri! Terima kasih sudah berbelanja produk Cuanki Ori Gurih Kaldu Sapi di Shaqueen Food...',
-    sentAt: '2026-11-01 14:20:00',
-    status: 'simulated'
-  }
-];
+export const INITIAL_WA_LOGS: WALog[] = [];

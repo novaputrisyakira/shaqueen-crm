@@ -240,8 +240,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Selalu tampilkan Landing Page saat awal buka link (/)
       setIsLoggedIn(false);
 
-      // Version lock to ensure ONLY official authentic Shaqueen Food catalog & customers are permanently loaded on Vercel
-      const DATA_VERSION = 'v20261104_official_shaqueen_pure_v5';
+      // Version lock to ensure fresh 0-omzet / clean transactions state while strictly keeping authentic Shaqueen Food products
+      const DATA_VERSION = 'v20261104_official_shaqueen_fresh_v6';
       const currentVersion = localStorage.getItem('shaqueen_data_version');
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
@@ -257,7 +257,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
         localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
 
-        // Customers: merge INITIAL_CUSTOMERS with any custom customers
+        // Customers: merge INITIAL_CUSTOMERS with any custom customers, reset transaction totals to 0
         let customUserCustomers: RetailCustomer[] = [];
         if (storedCustomers) {
           try {
@@ -267,27 +267,22 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           } catch {}
         }
-        const permanentCustomers = [...INITIAL_CUSTOMERS, ...customUserCustomers];
+        const permanentCustomers = [...INITIAL_CUSTOMERS, ...customUserCustomers].map(c => ({
+          ...c,
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrderDate: ''
+        }));
         setCustomers(permanentCustomers);
         localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(permanentCustomers));
         localStorage.setItem('sq_customers', JSON.stringify(permanentCustomers));
 
-        // Orders: merge INITIAL_ORDERS with any custom orders
-        let customUserOrders: B2COrder[] = [];
-        if (storedOrders) {
-          try {
-            const parsed: B2COrder[] = JSON.parse(storedOrders);
-            if (Array.isArray(parsed)) {
-              customUserOrders = parsed.filter(o => !INITIAL_ORDERS.some(io => io.id === o.id));
-            }
-          } catch {}
-        }
-        const permanentOrders = [...INITIAL_ORDERS, ...customUserOrders];
-        setOrders(permanentOrders);
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(permanentOrders));
-        localStorage.setItem('sq_orders', JSON.stringify(permanentOrders));
+        // Orders: Reset all transaction history to empty []
+        setOrders([]);
+        localStorage.setItem(STORAGE_KEYS.ORDERS, '[]');
+        localStorage.setItem('sq_orders', '[]');
 
-        // Partners: merge INITIAL_PARTNERS with any custom partners
+        // Partners: merge partners and reset transaction metrics to 0
         let customUserPartners: B2BPartner[] = [];
         if (storedPartners) {
           try {
@@ -297,25 +292,29 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           } catch {}
         }
-        const permanentPartners = [...INITIAL_PARTNERS, ...customUserPartners];
+        const permanentPartners = [...INITIAL_PARTNERS, ...customUserPartners].map(p => ({
+          ...p,
+          totalPurchasedCartons: 0,
+          totalSettledAmount: 0
+        }));
         setPartners(permanentPartners);
         localStorage.setItem(STORAGE_KEYS.PARTNERS, JSON.stringify(permanentPartners));
         localStorage.setItem('sq_partners', JSON.stringify(permanentPartners));
 
-        // Settlements: merge INITIAL_SETTLEMENTS with any custom settlements
-        let customUserSettlements: B2BSettlement[] = [];
-        if (storedSettlements) {
-          try {
-            const parsed: B2BSettlement[] = JSON.parse(storedSettlements);
-            if (Array.isArray(parsed)) {
-              customUserSettlements = parsed.filter(s => !INITIAL_SETTLEMENTS.some(is => is.id === s.id));
-            }
-          } catch {}
-        }
-        const permanentSettlements = [...INITIAL_SETTLEMENTS, ...customUserSettlements];
-        setSettlements(permanentSettlements);
-        localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, JSON.stringify(permanentSettlements));
-        localStorage.setItem('sq_settlements', JSON.stringify(permanentSettlements));
+        // Drops: Reset to empty []
+        setDrops([]);
+        localStorage.setItem(STORAGE_KEYS.DROPS, '[]');
+        localStorage.setItem('sq_drops', '[]');
+
+        // Settlements: Reset all B2B wholesale transactions to empty []
+        setSettlements([]);
+        localStorage.setItem(STORAGE_KEYS.SETTLEMENTS, '[]');
+        localStorage.setItem('sq_settlements', '[]');
+
+        // WhatsApp Logs: Reset to empty []
+        setWaLogs([]);
+        localStorage.setItem(STORAGE_KEYS.WA_LOGS, '[]');
+        localStorage.setItem('sq_wa_logs', '[]');
 
         localStorage.setItem('shaqueen_data_version', DATA_VERSION);
       } else {

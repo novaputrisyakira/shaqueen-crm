@@ -9,8 +9,8 @@
     "joinDate": "2026-06-15",
     "status": "aktif",
     "notes": "Grosir sembako & snack Priangan, mitra B2B aktif kartonan.",
-    "totalPurchasedCartons": 2,
-    "totalSettledAmount": 276000
+    "totalPurchasedCartons": 0,
+    "totalSettledAmount": 0
   },
   {
     "id": "partner-1",
@@ -22,8 +22,8 @@
     "joinDate": "2026-06-15",
     "status": "aktif",
     "notes": "Lokasi strategis dekat pusat keramaian Bandung. Penjualan grosir Cuanki Instan & Pilus rutin mingguan.",
-    "totalPurchasedCartons": 15,
-    "totalSettledAmount": 2340000
+    "totalPurchasedCartons": 0,
+    "totalSettledAmount": 0
   },
   {
     "id": "partner-2",
@@ -35,8 +35,8 @@
     "joinDate": "2026-07-01",
     "status": "aktif",
     "notes": "Target wisatawan akhir pekan. Moring dan Cuanki selalu dipesan setiap hari Kamis.",
-    "totalPurchasedCartons": 18,
-    "totalSettledAmount": 2808000
+    "totalPurchasedCartons": 0,
+    "totalSettledAmount": 0
   },
   {
     "id": "partner-3",
@@ -48,8 +48,8 @@
     "joinDate": "2026-08-10",
     "status": "aktif",
     "notes": "Kawasan wisata & kampus Dago. Pilus kencur dan moring sangat laris.",
-    "totalPurchasedCartons": 8,
-    "totalSettledAmount": 1248000
+    "totalPurchasedCartons": 0,
+    "totalSettledAmount": 0
   },
   {
     "id": "partner-4",
@@ -61,7 +61,7 @@
     "joinDate": "2026-09-01",
     "status": "aktif",
     "notes": "Mitra agen distributor camilan wilayah Bandung Selatan.",
-    "totalPurchasedCartons": 4,
-    "totalSettledAmount": 624000
+    "totalPurchasedCartons": 0,
+    "totalSettledAmount": 0
   }
 ]
