@@ -240,8 +240,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Selalu tampilkan Landing Page saat awal buka link (/)
       setIsLoggedIn(false);
 
-      // Version lock to ensure official Shaqueen Food catalog & customers are permanently loaded on Vercel
-      const DATA_VERSION = 'v20261104_official_shaqueen_permanent_v3';
+      // Version lock to ensure ONLY official authentic Shaqueen Food catalog & customers are permanently loaded on Vercel
+      const DATA_VERSION = 'v20261104_official_shaqueen_pure_v4';
       const currentVersion = localStorage.getItem('shaqueen_data_version');
       const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('sq_products');
       const storedCustomers = localStorage.getItem(STORAGE_KEYS.CUSTOMERS) || localStorage.getItem('sq_customers');
@@ -251,17 +251,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const storedSettlements = localStorage.getItem(STORAGE_KEYS.SETTLEMENTS) || localStorage.getItem('sq_settlements');
 
       if (currentVersion !== DATA_VERSION || !storedProducts || !storedCustomers) {
-        // Upgrade / fresh seed: load official permanent datasets, preserving any custom user records
-        let customUserProducts: Product[] = [];
-        if (storedProducts) {
-          try {
-            const parsed: Product[] = JSON.parse(storedProducts);
-            if (Array.isArray(parsed)) {
-              customUserProducts = parsed.filter(p => !INITIAL_PRODUCTS.some(ip => ip.id === p.id || ip.sku === p.sku));
-            }
-          } catch {}
-        }
-        const permanentCatalog = [...INITIAL_PRODUCTS, ...customUserProducts];
+        // Upgrade / fresh seed: purge unwanted system products and keep strictly authentic Shaqueen Food products
+        const permanentCatalog = INITIAL_PRODUCTS;
         setProducts(permanentCatalog);
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(permanentCatalog));
         localStorage.setItem('sq_products', JSON.stringify(permanentCatalog));
@@ -331,10 +322,10 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsed: Product[] = JSON.parse(storedProducts);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const existingIds = new Set(parsed.map(p => p.id));
-            const existingSkus = new Set(parsed.map(p => p.sku));
-            const enriched = parsed.map((p, idx) => {
-              const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku) || INITIAL_PRODUCTS[idx % INITIAL_PRODUCTS.length];
+            // Keep only authentic products matching INITIAL_PRODUCTS
+            const valid = parsed.filter(p => INITIAL_PRODUCTS.some(ip => ip.id === p.id || ip.sku === p.sku));
+            const enriched = (valid.length > 0 ? valid : INITIAL_PRODUCTS).map(p => {
+              const defaultProd = INITIAL_PRODUCTS.find(ip => ip.id === p.id || ip.sku === p.sku);
               const img = p.image_url || p.imageUrl || defaultProd?.imageUrl || defaultProd?.image_url;
               return {
                 ...p,
@@ -345,7 +336,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 b2bConversion: Math.max(1, parseInt(String(p.b2bConversion), 10) || (defaultProd?.b2bConversion || 12)),
               };
             });
-            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id) && !existingSkus.has(dp.sku));
+            const existingIds = new Set(enriched.map(p => p.id));
+            const missingDefaults = INITIAL_PRODUCTS.filter(dp => !existingIds.has(dp.id));
             const finalProducts = [...enriched, ...missingDefaults];
             setProducts(finalProducts);
           } else {
